@@ -18,7 +18,6 @@ int getSettingsMenuSelectedValue() {
   return -1;
 }
 
-
 Menu settingsMenuItems[settingsLength] = {
   Menu("Sensor Mode", 1, navigateToSubmenu, getSettingsMenuSelectedValue),
   Menu("Scale", 2, navigateToSubmenu, getSettingsMenuSelectedValue),
@@ -34,7 +33,7 @@ int getSelectedSensorMode() {
   return sensorMode;
 }
 
-Menu sensorModeMenuItems[sensorLength] = {
+Menu sensorModeMenuItems[sensorLength] =  {
   Menu("Velocity", 0, changeSetting, getSelectedSensorMode),
   Menu("Mod Wheel", 1, changeSetting, getSelectedSensorMode),
   Menu("Pitch Bend", 2, changeSetting, getSelectedSensorMode),
@@ -186,11 +185,6 @@ byte menuLengths[menusLength] = {
   patchLength
 };
 
-byte arraySize = menuLengths[currentMenu];
-
-byte menuTextSize = 3;
-byte menuItemOffset = 45;
-
 void navigateToSubmenu(byte target) {
   currentMenu = target;
   currentMenuItem = 0;
@@ -206,9 +200,8 @@ void changeStripSetting(byte setting) {
   navigateToSubmenu(0);
 }
 
-
 void endMenuInteraction() {
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale].scale, scaleLengths[currentScale]);
+  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
   navigateToSubmenu(0);
 }
 
@@ -322,8 +315,6 @@ void drawMenu() {
 
   tft.setCursor(10, 153);
   tft.print(allMenus[currentMenu][nextMenuItem].menuName);
-  Serial.println(currentMenu);
-  Serial.println(nextMenuItem);
   int selectedMenu = allMenus[currentMenu]->getSelectedMenu();
 
   if (selectedMenu == -1) {
@@ -352,7 +343,7 @@ boolean newButtonState2 = HIGH;
 boolean lastButtonState3 = HIGH;
 boolean newButtonState3 = HIGH;
 
-unsigned long menuDebounceDelay = 5;
+const byte menuDebounceDelay = 5;
 unsigned long lastMenuDebounce = 0;
 
 void ManageNavigationButtons() {
@@ -390,7 +381,6 @@ void ManageNavigationButtons() {
 void handleNavigationSelect() {
   Menu currentItem = allMenus[currentMenu][currentMenuItem];
   currentItem.onAction(currentItem.submenuTarget);
-  arraySize = menuLengths[currentMenu];
   drawMenu();
 }
 

@@ -6,7 +6,6 @@
 #include "MIDILodica.h"
 #include "MIDIButton.h"
 #include "Menu.h"
-#include "Scales.h"
 #include "StartingNote.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
@@ -19,7 +18,7 @@
 #define stripPin 19
 #define menuDown 21
 #define menuSelect 22
-#define menuUp 23
+#define menuUp 20
 
 #define TFT_CS        23
 #define TFT_RST       -1
@@ -36,6 +35,7 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 #define R5 11
 #define R6 12
 #define R7 13
+#define R8 14
 
 #define C1 17
 #define C2 1
@@ -48,7 +48,6 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 #define rowsLength 7
 #define columnsLength 5
 
-
 #define backgroundColor 0x5151
 #define textColor 0xAE7F
 #define selectedColor 0x3C7A
@@ -60,37 +59,38 @@ byte startingNote = 60;
 
 NoteButton *noteButtons[rowsLength][columnsLength];
 
-byte chromatic[] = {1};
-byte ionian[] = {2, 2, 1, 2, 2, 2, 1};
-byte dorian[] = {2, 1, 2, 2, 2, 1, 2};
-byte phrygian[] = {1, 2, 2, 2, 1, 2, 2};
-byte lydian[] = {2, 2, 2, 1, 2, 2, 1};
-byte mixolydian[] = {2, 2, 1, 2, 2, 1, 2};
-byte aeolian[] = {2, 1, 2, 2, 1, 2};
-byte locrian[] = {1, 2, 2, 2, 1, 2, 2};
-byte melodicMinor[] = {2, 1, 2, 2, 1, 3, 1};
-byte pentatonicMajor[] = {2, 2, 3, 2, 3};
-byte pentatonicMinor[] = {3, 2, 2, 3, 2};
-byte wholeTone[] = {2};
-byte octatonic21[] = {2, 1};
-byte octatonic12[] = {1, 2};
+const byte chromatic[] = {1};
+const byte ionian[] = {2, 2, 1, 2, 2, 2, 1};
+const byte dorian[] = {2, 1, 2, 2, 2, 1, 2};
+const byte phrygian[] = {1, 2, 2, 2, 1, 2, 2};
+const byte lydian[] = {2, 2, 2, 1, 2, 2, 1};
+const byte mixolydian[] = {2, 2, 1, 2, 2, 1, 2};
+const byte aeolian[] = {2, 1, 2, 2, 1, 2};
+const byte locrian[] = {1, 2, 2, 2, 1, 2, 2};
+const byte melodicMinor[] = {2, 1, 2, 2, 1, 3, 1};
+const byte pentatonicMajor[] = {2, 2, 3, 2, 3};
+const byte pentatonicMinor[] = {3, 2, 2, 3, 2};
+const byte wholeTone[] = {2};
+const byte octatonic21[] = {2, 1};
+const byte octatonic12[] = {1, 2};
 
-Scale scales[14] = {
-  Scale("Chromatic", chromatic),
-  Scale("Ionian", ionian),
-  Scale("Dorian", dorian),
-  Scale("Phryigian", phrygian),
-  Scale("Lydian", lydian),
-  Scale("Mixolydian", mixolydian),
-  Scale("Aeolian", aeolian),
-  Scale("Locrian", locrian),
-  Scale("Melodic Minor", melodicMinor),
-  Scale("Pentatonic Major", pentatonicMajor),
-  Scale("Pentatonic Minor", pentatonicMinor),
-  Scale("Whole Tone", wholeTone),
-  Scale("Octatonic 1-2", octatonic12),
-  Scale("Octatonic 2-1", octatonic21),
+byte *scales[] = {
+  chromatic,
+  ionian,
+  dorian,
+  phrygian,
+  lydian,
+  mixolydian,
+  aeolian,
+  locrian,
+  melodicMinor,
+  pentatonicMajor,
+  pentatonicMinor,
+  wholeTone,
+  octatonic12,
+  octatonic21,
 };
+
 byte scaleLengths[] = {1, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 1, 2, 2 };
 
 // MIDIFlute config
@@ -133,7 +133,7 @@ byte minimumSensitivity = 100;
 byte lastUnderButtonState = HIGH;
 byte nextUnderButtonState = LOW;
 long lastUnderButtonDebounce;
-byte underButtonDebounceDelay = 5;
+const byte underButtonDebounceDelay = 5;
 
 uint8_t sensorValue;
 int nextVal;
@@ -151,6 +151,11 @@ void launchScreen() {
     SCREEN_WIDTH / 2 - bitmapWidth / 2,
     SCREEN_HEIGHT / 2 - bitmapHeight / 2,
     epd_bitmap_MIDILodica, bitmapWidth, bitmapHeight, textColor);
+  tft.drawBitmap(
+    SCREEN_WIDTH / 2 - bitmapWidth / 2,
+    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
+    epd_bitmap_MIDILodica_overlay, bitmapOverlayWidth, bitmapOverlayHeight, selectedColor
+  );
   delay(3000);
   tft.setTextSize(2);
   tft.setTextColor(textColor);
@@ -160,11 +165,11 @@ void launchScreen() {
 
 void setup() {
   Serial.begin(9600);
-  pinMode(menuUp, INPUT_PULLUP);
-  pinMode(menuSelect, INPUT_PULLUP);
-  pinMode(menuDown, INPUT_PULLUP);
-  pinMode(underButton, INPUT_PULLUP);
-
+  //  pinMode(menuUp, INPUT_PULLUP);
+  //  pinMode(menuSelect, INPUT_PULLUP);
+  //  pinMode(menuDown, INPUT_PULLUP);
+  //  pinMode(underButton, INPUT_PULLUP);
+  //
 
   for (byte i = 0; i < rowsLength; i++) {
     pinMode(rows[i], OUTPUT);
@@ -176,37 +181,38 @@ void setup() {
 
   delay(1000);
   launchScreen();
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale].scale, scaleLengths[currentScale]);
+  Serial.println(scales[2][0]);
+  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 }
 
 void loop() {
-  delay(4000);
-  handleNavigatorDown();
-  
-  playMIDINotes();
-  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
-
-  // Avoid unwanted noise when idle.
-  if (constrainedSensorVal <= 105) {
-    constrainedSensorVal = 100;
-  }
-
-  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
-
-  if (sensorValue != nextVal) {
-    handleSensorModes(sensorValue);
-    nextVal = sensorValue;
-  }
-
-  stripVal = map(analogRead(stripPin), 1023, 0, 0, 127);
-
-  if (stripVal != nextStripVal) {
-    handleStripVal(stripVal);
-    nextStripVal = stripVal;
-  }
-
-  handleUnderButtonModes();
-  ManageNavigationButtons();
+    delay(4000);
+    handleNavigatorDown();
+//
+//  playMIDINotes();
+//  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
+//
+//  // Avoid unwanted noise when idle.
+//  if (constrainedSensorVal <= 105) {
+//    constrainedSensorVal = 100; 0
+//  }
+//
+//  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
+//
+//  if (sensorValue != nextVal) {
+//    handleSensorModes(sensorValue);
+//    nextVal = sensorValue;
+//  }
+//
+//  stripVal = map(analogRead(stripPin), 1023, 0, 0, 127);
+//
+//  if (stripVal != nextStripVal) {
+//    handleStripVal(stripVal);
+//    nextStripVal = stripVal;
+//  }
+//
+//  handleUnderButtonModes();
+//  ManageNavigationButtons();
 }
 
 void handleSensorModes(byte sensorVal) {
@@ -289,7 +295,7 @@ void changeOctaveShift(byte newOctave) {
 
 void handleUnderButtonOctaveShift(byte octaveShiftAmount) {
   changeOctaveShift(octaveShiftAmount);
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale].scale, scaleLengths[currentScale]);
+  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
   cancelAllNotes();
 }
 
