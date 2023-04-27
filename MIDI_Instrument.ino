@@ -8,8 +8,9 @@
 #include "Menu.h"
 #include "Scales.h"
 #include "StartingNote.h"
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h> 
+#include <Fonts/FreeMonoBold9pt7b.h>
 #include <SPI.h>
 
 #define numberOfButtons 35
@@ -20,10 +21,13 @@
 #define menuSelect 22
 #define menuUp 23
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-#define SCREEN_ADDRESS 0x3C
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
+#define TFT_CS        23
+#define TFT_RST       -1
+#define TFT_DC        21
+
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 172
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 #define R1 7
 #define R2 8
@@ -43,6 +47,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
 #define rowsLength 7
 #define columnsLength 5
+
+
+#define backgroundColor 0x5151
+#define textColor 0xAE7F
+#define selectedColor 0x3C7A
 
 byte rows[rowsLength] = { R1, R2, R3, R4, R5, R6, R7 };
 byte columns[columnsLength] = { C1, C2, C3, C4, C5 };
@@ -135,17 +144,19 @@ int nextStripVal;
 uint8_t velocity = 127;
 
 void launchScreen() {
-  display.clearDisplay();
-  display.drawBitmap(
-    0,
-    0,
-    epd_bitmap_MIDILodica, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
-  display.display();
-  delay(3000);
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
+  tft.init(SCREEN_HEIGHT, SCREEN_WIDTH);
+  tft.setRotation(1);
+  tft.fillScreen(ST77XX_BLUE);
+//  display.drawBitmap(
+//    0,
+//    0,
+//    epd_bitmap_MIDILodica, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
+//  display.display();
+//  delay(3000);
+  tft.setTextSize(2);
+  tft.setTextColor(textColor);
+  tft.setFont(&FreeMonoBold9pt7b);
   drawMenu();
-  delay(500);
 }
 
 void setup() {
@@ -164,9 +175,9 @@ void setup() {
     pinMode(columns[i], INPUT);
   }
 
-  while (!Serial) {}
+  delay(1000);
   launchScreen();
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale].scale, scaleLengths[currentScale]);
+//  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale].scale, scaleLengths[currentScale]);
 }
 
 void loop() {

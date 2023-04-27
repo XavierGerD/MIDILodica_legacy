@@ -11,112 +11,152 @@
 #define underButtonLength 3
 #define patchLength 10
 
+byte currentMenu = 0;
+byte currentMenuItem = 0;
+
+int getSettingsMenuSelectedValue() {
+  return -1;
+}
+
+
 Menu settingsMenuItems[settingsLength] = {
-  Menu("Sens. Mode", 1, navigateToSubmenu),
-  Menu("Scale", 2, navigateToSubmenu),
-  Menu("Tonic", 3, navigateToSubmenu),
-  Menu("Octave", 4, navigateToSubmenu),
-  Menu("Sens.", 5, navigateToSubmenu),
-  Menu("Under btn.", 6, navigateToSubmenu),
-  Menu("Save", 7, navigateToSubmenu),
-  Menu("Load", 8, navigateToSubmenu),
+  Menu("Sensor Mode", 1, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Scale", 2, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Tonic", 3, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Octave", 4, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Sensitivity", 5, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Under button.", 6, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Save", 7, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Load", 8, navigateToSubmenu, getSettingsMenuSelectedValue),
 };
+
+int getSelectedSensorMode() {
+  return sensorMode;
+}
 
 Menu sensorModeMenuItems[sensorLength] = {
-  Menu("Vel", 0, changeSetting),
-  Menu("Mod Wh.", 1, changeSetting),
-  Menu("Pitch B.", 2, changeSetting),
-  Menu("8va Shift", 3, changeSetting)
+  Menu("Velocity", 0, changeSetting, getSelectedSensorMode),
+  Menu("Mod Wheel", 1, changeSetting, getSelectedSensorMode),
+  Menu("Pitch Bend", 2, changeSetting, getSelectedSensorMode),
+  Menu("Octave Shift", 3, changeSetting, getSelectedSensorMode)
 };
+
+int getSelectedStripMode() {
+  return stripSensorMode;
+}
 
 Menu stripModeMenuItems[stripLength] = {
-  Menu("Vel", 0, changeSetting),
-  Menu("Mod Wh.", 1, changeSetting),
-  Menu("Pitch B.", 2, changeSetting),
-  Menu("8va Shift", 3, changeSetting)
+  Menu("Velocity", 0, changeStripSetting, getSelectedStripMode),
+  Menu("Mod Wheel", 1, changeStripSetting, getSelectedStripMode),
+  Menu("Pitch Bend", 2, changeStripSetting, getSelectedStripMode),
+  Menu("Octave Shift", 3, changeStripSetting, getSelectedStripMode)
 };
+
+int getSelectedScale() {
+  return currentScale;
+}
 
 Menu scaleMenuItems[scaleLength] = {
-  Menu("Chromatic", 0, changeScale),
-  Menu("Ionian", 1, changeScale),
-  Menu("Dorian", 2, changeScale),
-  Menu("Phryigian", 3, changeScale),
-  Menu("Lydian", 4, changeScale),
-  Menu("Mixolydian", 5, changeScale),
-  Menu("Aeolian", 6, changeScale),
-  Menu("Locrian", 7, changeScale),
-  Menu("Mel. Minor", 8, changeScale),
-  Menu("Penta. Maj.", 9, changeScale),
-  Menu("Penta. Min.", 10, changeScale),
-  Menu("Whole Tone", 11, changeScale),
-  Menu("Octa. 2, 1", 12, changeScale),
-  Menu("Octa. 1, 2", 13, changeScale),
+  Menu("Chromatic", 0, changeScale, getSelectedScale),
+  Menu("Ionian", 1, changeScale, getSelectedScale),
+  Menu("Dorian", 2, changeScale, getSelectedScale),
+  Menu("Phryigian", 3, changeScale, getSelectedScale),
+  Menu("Lydian", 4, changeScale, getSelectedScale),
+  Menu("Mixolydian", 5, changeScale, getSelectedScale),
+  Menu("Aeolian", 6, changeScale, getSelectedScale),
+  Menu("Locrian", 7, changeScale, getSelectedScale),
+  Menu("Mel. Minor", 8, changeScale, getSelectedScale),
+  Menu("Penta. Maj.", 9, changeScale, getSelectedScale),
+  Menu("Penta. Min.", 10, changeScale, getSelectedScale),
+  Menu("Whole Tone", 11, changeScale, getSelectedScale),
+  Menu("Octatonic 2, 1", 12, changeScale, getSelectedScale),
+  Menu("Octatonic 1, 2", 13, changeScale, getSelectedScale),
 };
+
+int getStartingNote() {
+  return currentStartingNote;
+}
 
 Menu startingNoteMenuItems[startingNoteLength] = {
-  Menu("C", 0, changeStartingNote),
-  Menu("Db", 1, changeStartingNote),
-  Menu("D", 2, changeStartingNote),
-  Menu("Eb", 3, changeStartingNote),
-  Menu("E", 4, changeStartingNote),
-  Menu("F", 5, changeStartingNote),
-  Menu("Gb", 6, changeStartingNote),
-  Menu("G", 7, changeStartingNote),
-  Menu("Ab", 8, changeStartingNote),
-  Menu("A", 9, changeStartingNote),
-  Menu("Bb", 10, changeStartingNote),
-  Menu("B", 11, changeStartingNote),
+  Menu("C", 0, changeStartingNote, getStartingNote),
+  Menu("Db", 1, changeStartingNote, getStartingNote),
+  Menu("D", 2, changeStartingNote, getStartingNote),
+  Menu("Eb", 3, changeStartingNote, getStartingNote),
+  Menu("E", 4, changeStartingNote, getStartingNote),
+  Menu("F", 5, changeStartingNote, getStartingNote),
+  Menu("Gb", 6, changeStartingNote, getStartingNote),
+  Menu("G", 7, changeStartingNote, getStartingNote),
+  Menu("Ab", 8, changeStartingNote, getStartingNote),
+  Menu("A", 9, changeStartingNote, getStartingNote),
+  Menu("Bb", 10, changeStartingNote, getStartingNote),
+  Menu("B", 11, changeStartingNote, getStartingNote),
 };
+
+int getStartingOctave() {
+  return currentStartingOctave;
+}
 
 Menu startingOctaveMenuItems[startingOctaveLength] = {
-  Menu("0", 0, changeStartingOctave),
-  Menu("1", 1, changeStartingOctave),
-  Menu("2", 2, changeStartingOctave),
-  Menu("3", 3, changeStartingOctave),
-  Menu("4", 4, changeStartingOctave),
-  Menu("5", 5, changeStartingOctave),
-  Menu("6", 6, changeStartingOctave),
-  Menu("7", 7, changeStartingOctave),
-  Menu("8", 8, changeStartingOctave),
+  Menu("0", 0, changeStartingOctave, getStartingOctave),
+  Menu("1", 1, changeStartingOctave, getStartingOctave),
+  Menu("2", 2, changeStartingOctave, getStartingOctave),
+  Menu("3", 3, changeStartingOctave, getStartingOctave),
+  Menu("4", 4, changeStartingOctave, getStartingOctave),
+  Menu("5", 5, changeStartingOctave, getStartingOctave),
+  Menu("6", 6, changeStartingOctave, getStartingOctave),
+  Menu("7", 7, changeStartingOctave, getStartingOctave),
+  Menu("8", 8, changeStartingOctave, getStartingOctave),
 };
+
+int getSensitivity() {
+  return currentSensitivity;
+}
 
 Menu sensitivityMenuItems[sensitivityLength] = {
-  Menu("Low", 0, changeSensitivity),
-  Menu("Medium", 1, changeSensitivity),
-  Menu("High", 2, changeSensitivity),
-  Menu("Very High", 3, changeSensitivity),
+  Menu("Low", 0, changeSensitivity, getSensitivity),
+  Menu("Medium", 1, changeSensitivity, getSensitivity),
+  Menu("High", 2, changeSensitivity, getSensitivity),
+  Menu("Very High", 3, changeSensitivity, getSensitivity),
 };
+
+int getUnderButtonMode() {
+  return underButtonMode;
+}
 
 Menu underButtonMenuItems[underButtonLength] = {
-  Menu("8va Up", 0, changeUnderButtonMode),
-  Menu("8va Down", 1, changeUnderButtonMode),
-  Menu("Sustain", 2, changeUnderButtonMode),
+  Menu("Octave Up", 0, changeUnderButtonMode, getUnderButtonMode),
+  Menu("Octave Down", 1, changeUnderButtonMode, getUnderButtonMode),
+  Menu("Sustain", 2, changeUnderButtonMode, getUnderButtonMode),
 };
 
+int getPatch() {
+  return -1;
+}
+
 Menu savePatchMenuItems[patchLength] = {
-  Menu("1", 0, savePatch),
-  Menu("2", 1, savePatch),
-  Menu("3", 2, savePatch),
-  Menu("4", 3, savePatch),
-  Menu("5", 4, savePatch),
-  Menu("6", 5, savePatch),
-  Menu("7", 6, savePatch),
-  Menu("8", 7, savePatch),
-  Menu("9", 8, savePatch),
-  Menu("10", 9, savePatch),
+  Menu("1", 0, savePatch, getPatch),
+  Menu("2", 1, savePatch, getPatch),
+  Menu("3", 2, savePatch, getPatch),
+  Menu("4", 3, savePatch, getPatch),
+  Menu("5", 4, savePatch, getPatch),
+  Menu("6", 5, savePatch, getPatch),
+  Menu("7", 6, savePatch, getPatch),
+  Menu("8", 7, savePatch, getPatch),
+  Menu("9", 8, savePatch, getPatch),
+  Menu("10", 9, savePatch, getPatch),
 };
 
 Menu loadPatchMenuItems[patchLength] = {
-  Menu("1", 0, loadPatch),
-  Menu("2", 1, loadPatch),
-  Menu("3", 2, loadPatch),
-  Menu("4", 3, loadPatch),
-  Menu("5", 4, loadPatch),
-  Menu("6", 5, loadPatch),
-  Menu("7", 6, loadPatch),
-  Menu("8", 7, loadPatch),
-  Menu("9", 8, loadPatch),
-  Menu("10", 9, loadPatch),
+  Menu("1", 0, loadPatch, getPatch),
+  Menu("2", 1, loadPatch, getPatch),
+  Menu("3", 2, loadPatch, getPatch),
+  Menu("4", 3, loadPatch, getPatch),
+  Menu("5", 4, loadPatch, getPatch),
+  Menu("6", 5, loadPatch, getPatch),
+  Menu("7", 6, loadPatch, getPatch),
+  Menu("8", 7, loadPatch, getPatch),
+  Menu("9", 8, loadPatch, getPatch),
+  Menu("10", 9, loadPatch, getPatch),
 };
 
 
@@ -132,9 +172,6 @@ Menu* allMenus[menusLength] = {
   savePatchMenuItems,
   loadPatchMenuItems
 };
-
-byte currentMenu = 0;
-byte currentMenuItem = 0;
 
 byte menuLengths[menusLength] = {
   settingsLength,
@@ -265,10 +302,44 @@ void loadPatch(byte startingLocation) {
 }
 
 void drawMenu() {
-  display.clearDisplay();
-  display.setCursor(0, 10);
-  display.println(allMenus[currentMenu][currentMenuItem].menuName);
-  display.display();
+  tft.fillScreen(backgroundColor);
+  int previousMenuItem = currentMenuItem - 1;
+  if (previousMenuItem < 0) {
+    previousMenuItem = menuLengths[currentMenu] - 1;
+  }
+
+  int nextMenuItem = currentMenuItem + 1;
+  if (nextMenuItem > menuLengths[currentMenu - 1]) {
+    nextMenuItem = 0;
+  }
+
+  tft.setCursor(10, 33);
+  tft.print(allMenus[currentMenu][previousMenuItem].menuName);
+
+  tft.setCursor(10, 93);
+  tft.fillRect(0, 60, tft.width(), 50, selectedColor);
+  tft.print(allMenus[currentMenu][currentMenuItem].menuName);
+
+  tft.setCursor(10, 153);
+  tft.print(allMenus[currentMenu][nextMenuItem].menuName);
+
+  int selectedMenu = allMenus[currentMenu]->getSelectedMenu();
+
+  if (selectedMenu == -1) {
+    return;
+  }
+
+  if (previousMenuItem == selectedMenu) {
+    tft.fillCircle(tft.width() - 30, 25, 15, selectedColor);
+  }
+
+  if (currentMenuItem == selectedMenu) {
+    tft.fillCircle(tft.width() - 30, 85, 15, selectedColor);
+  }
+
+  if (nextMenuItem == selectedMenu) {
+    tft.fillCircle(tft.width() - 30, 145, 15, selectedColor);
+  }
 }
 
 boolean lastButtonState1 = HIGH;
