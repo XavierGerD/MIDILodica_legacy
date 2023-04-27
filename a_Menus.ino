@@ -11,7 +11,7 @@
 #define underButtonLength 3
 #define patchLength 10
 
-byte currentMenu = 0;
+byte currentMenu = 1;
 byte currentMenuItem = 0;
 
 int getSettingsMenuSelectedValue() {
@@ -322,7 +322,8 @@ void drawMenu() {
 
   tft.setCursor(10, 153);
   tft.print(allMenus[currentMenu][nextMenuItem].menuName);
-
+  Serial.println(currentMenu);
+  Serial.println(nextMenuItem);
   int selectedMenu = allMenus[currentMenu]->getSelectedMenu();
 
   if (selectedMenu == -1) {
@@ -395,17 +396,16 @@ void handleNavigationSelect() {
 
 void handleNavigatorDown() {
   currentMenuItem += 1;
-  if (currentMenuItem == menuLengths[currentMenu]) {
+  if (currentMenuItem == menuLengths[currentMenu] - 1) {
     currentMenuItem = 0;
   }
   drawMenu();
 }
 
 void handleNavigatorUp() {
-  if (currentMenuItem - 1 < 0) {
+  currentMenuItem -= 1;
+  if (currentMenuItem < 0) {
     currentMenuItem = menuLengths[currentMenu] - 1;
-  } else {
-    currentMenuItem -= 1;
   }
   drawMenu();
 }

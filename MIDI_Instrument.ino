@@ -9,7 +9,7 @@
 #include "Scales.h"
 #include "StartingNote.h"
 #include <Adafruit_GFX.h>
-#include <Adafruit_ST7789.h> 
+#include <Adafruit_ST7789.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <SPI.h>
 
@@ -146,13 +146,12 @@ uint8_t velocity = 127;
 void launchScreen() {
   tft.init(SCREEN_HEIGHT, SCREEN_WIDTH);
   tft.setRotation(1);
-  tft.fillScreen(ST77XX_BLUE);
-//  display.drawBitmap(
-//    0,
-//    0,
-//    epd_bitmap_MIDILodica, SCREEN_WIDTH, SCREEN_HEIGHT, 1);
-//  display.display();
-//  delay(3000);
+  tft.fillScreen(backgroundColor);
+  tft.drawBitmap(
+    SCREEN_WIDTH / 2 - bitmapWidth / 2,
+    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
+    epd_bitmap_MIDILodica, bitmapWidth, bitmapHeight, textColor);
+  delay(3000);
   tft.setTextSize(2);
   tft.setTextColor(textColor);
   tft.setFont(&FreeMonoBold9pt7b);
@@ -177,10 +176,13 @@ void setup() {
 
   delay(1000);
   launchScreen();
-//  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale].scale, scaleLengths[currentScale]);
+  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale].scale, scaleLengths[currentScale]);
 }
 
 void loop() {
+  delay(4000);
+  handleNavigatorDown();
+  
   playMIDINotes();
   byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
 
