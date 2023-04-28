@@ -294,6 +294,18 @@ void loadPatch(byte startingLocation) {
   endMenuInteraction();
 }
 
+void drawTextWithShadow(char* text, byte x, byte y) {
+  byte offset = 2;
+  tft.setTextColor(0x545d);
+  tft.setCursor(x - offset, y + offset);
+  tft.print(text);
+
+  tft.setTextColor(textColor);
+  tft.setCursor(x, y);
+  tft.print(text);
+
+}
+
 void drawMenu() {
   tft.fillScreen(backgroundColor);
   int previousMenuItem = currentMenuItem - 1;
@@ -306,15 +318,13 @@ void drawMenu() {
     nextMenuItem = 0;
   }
 
-  tft.setCursor(10, 33);
-  tft.print(allMenus[currentMenu][previousMenuItem].menuName);
+  drawTextWithShadow(allMenus[currentMenu][previousMenuItem].menuName, 15, 33);
 
-  tft.setCursor(10, 93);
   tft.fillRect(0, 60, tft.width(), 50, selectedColor);
-  tft.print(allMenus[currentMenu][currentMenuItem].menuName);
+  drawTextWithShadow(allMenus[currentMenu][currentMenuItem].menuName, 15, 93);
 
-  tft.setCursor(10, 153);
-  tft.print(allMenus[currentMenu][nextMenuItem].menuName);
+  drawTextWithShadow(allMenus[currentMenu][nextMenuItem].menuName, 15, 153);
+
   int selectedMenu = allMenus[currentMenu]->getSelectedMenu();
 
   if (selectedMenu == -1) {
@@ -347,6 +357,16 @@ const byte menuDebounceDelay = 5;
 unsigned long lastMenuDebounce = 0;
 
 void ManageNavigationButtons() {
+  for (byte i = 0; i < rowsLength; i++) {
+    bool pressedButtonState = digitalRead(rows[i]);
+    if ((millis() - lastMenuDebounce) > menuDebounceDelay) {
+
+    }
+    //    switch(i){
+    //      case 1:
+    //
+    //    }
+  }
   newButtonState1 = digitalRead(menuDown);
   if ((millis() - lastMenuDebounce) > menuDebounceDelay && newButtonState1 != lastButtonState1) {
     if (newButtonState1) {

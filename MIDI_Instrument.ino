@@ -28,32 +28,34 @@
 #define SCREEN_HEIGHT 172
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
-#define R1 7
-#define R2 8
-#define R3 9
-#define R4 10
-#define R5 11
-#define R6 12
-#define R7 13
-#define R8 14
+#define C1 7
+#define C2 8
+#define C3 9
+#define C4 10
+#define C5 11
+#define C6 12
+#define C7 13
+// Used for menu controls and underbutton
+#define C8 20
 
-#define C1 17
-#define C2 1
-#define C3 4
-#define C4 5
-#define C5 6
+#define R1 17
+#define R2 1
+#define R3 4
+#define R4 5
+#define R5 6
 
 #define underButton 20
 
-#define rowsLength 7
-#define columnsLength 5
+#define rowsLength 5
+#define columnsLength 7
 
 #define backgroundColor 0x5151
 #define textColor 0xAE7F
+#define textShadowColor 0x2318
 #define selectedColor 0x3C7A
 
-byte rows[rowsLength] = { R1, R2, R3, R4, R5, R6, R7 };
-byte columns[columnsLength] = { C1, C2, C3, C4, C5 };
+byte rows[rowsLength] = { R1, R2, R3, R4, R5 };
+byte columns[columnsLength] = { C1, C2, C3, C4, C5, C6, C7 };
 
 byte startingNote = 60;
 
@@ -143,76 +145,90 @@ int nextStripVal;
 
 uint8_t velocity = 127;
 
+byte increment = 4;
+uint16_t colors[] = { textColor, 0x545d, textShadowColor };
+
+void showSplashScreen() {
+  for (int i = 2; i >= 0; i--) {
+    tft.setTextColor(colors[i]);
+    tft.setCursor(72 - (increment * i), 70 + (increment * i));
+    tft.print("MIDI");
+    tft.setCursor(25 - (increment * i), 130  + (increment * i));
+    tft.print("LODICA");
+  }
+
+  delay(1000);
+}
+
 void launchScreen() {
   tft.init(SCREEN_HEIGHT, SCREEN_WIDTH);
   tft.setRotation(1);
   tft.fillScreen(backgroundColor);
-  tft.drawBitmap(
-    SCREEN_WIDTH / 2 - bitmapWidth / 2,
-    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
-    epd_bitmap_MIDILodica, bitmapWidth, bitmapHeight, textColor);
-  tft.drawBitmap(
-    SCREEN_WIDTH / 2 - bitmapWidth / 2,
-    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
-    epd_bitmap_MIDILodica_overlay, bitmapOverlayWidth, bitmapOverlayHeight, selectedColor
-  );
-  delay(3000);
-  tft.setTextSize(2);
-  tft.setTextColor(textColor);
+  //  tft.drawBitmap(
+  //    SCREEN_WIDTH / 2 - bitmapWidth / 2,
+  //    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
+  //    epd_bitmap_MIDILodica, bitmapWidth, bitmapHeight, textColor);
+  //  tft.drawBitmap(
+  //    SCREEN_WIDTH / 2 - bitmapWidth / 2,
+  //    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
+  //    epd_bitmap_MIDILodica_overlay, bitmapOverlayWidth, bitmapOverlayHeight, selectedColor
+  //  );
+  tft.setTextSize(4);
   tft.setFont(&FreeMonoBold9pt7b);
+
+  showSplashScreen();
+
+  tft.setTextColor(textColor);
+  tft.setTextSize(2);
   drawMenu();
 }
 
 void setup() {
   Serial.begin(9600);
-  //  pinMode(menuUp, INPUT_PULLUP);
-  //  pinMode(menuSelect, INPUT_PULLUP);
-  //  pinMode(menuDown, INPUT_PULLUP);
-  //  pinMode(underButton, INPUT_PULLUP);
-  //
 
   for (byte i = 0; i < rowsLength; i++) {
     pinMode(rows[i], OUTPUT);
   }
 
   for (byte i = 0; i < columnsLength; i++) {
-    pinMode(columns[i], INPUT);
+    pinMode(columns[i], INPUT_PULLUP);
   }
+
+  pinMode(C8, INPUT_PULLUP);
 
   delay(1000);
   launchScreen();
-  Serial.println(scales[2][0]);
   assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 }
 
 void loop() {
-    delay(4000);
-    handleNavigatorDown();
-//
-//  playMIDINotes();
-//  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
-//
-//  // Avoid unwanted noise when idle.
-//  if (constrainedSensorVal <= 105) {
-//    constrainedSensorVal = 100; 0
-//  }
-//
-//  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
-//
-//  if (sensorValue != nextVal) {
-//    handleSensorModes(sensorValue);
-//    nextVal = sensorValue;
-//  }
-//
-//  stripVal = map(analogRead(stripPin), 1023, 0, 0, 127);
-//
-//  if (stripVal != nextStripVal) {
-//    handleStripVal(stripVal);
-//    nextStripVal = stripVal;
-//  }
-//
-//  handleUnderButtonModes();
-//  ManageNavigationButtons();
+  //  delay(4000);
+  //  handleNavigatorDown();
+
+  playMIDINotes();
+  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
+
+  // Avoid unwanted noise when idle.
+  if (constrainedSensorVal <= 105) {
+    constrainedSensorVal = 100;
+  }
+
+  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
+
+  if (sensorValue != nextVal) {
+    handleSensorModes(sensorValue);
+    nextVal = sensorValue;
+  }
+
+  stripVal = map(analogRead(stripPin), 1023, 0, 0, 127);
+
+  if (stripVal != nextStripVal) {
+    handleStripVal(stripVal);
+    nextStripVal = stripVal;
+  }
+
+  handleUnderButtonModes();
+  ManageNavigationButtons();
 }
 
 void handleSensorModes(byte sensorVal) {
