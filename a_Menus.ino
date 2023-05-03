@@ -1,7 +1,7 @@
 #include <EEPROM.h>
 
 #define menusLength 10
-#define settingsLength 8
+#define settingsLength 9
 #define sensorLength 4
 #define stripLength 4
 #define scaleLength 14
@@ -12,6 +12,7 @@
 #define patchLength 10
 
 byte currentMenu = 1;
+byte currentNumberSelectMenu = 1;
 byte currentMenuItem = 0;
 
 int getSettingsMenuSelectedValue() {
@@ -24,9 +25,10 @@ Menu settingsMenuItems[settingsLength] = {
   Menu("Tonic", 3, navigateToSubmenu, getSettingsMenuSelectedValue),
   Menu("Octave", 4, navigateToSubmenu, getSettingsMenuSelectedValue),
   Menu("Sensitivity", 5, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Under button.", 6, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Save", 7, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Load", 8, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Under button", 6, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("MIDI Channel", 7, navigateToNumberSelectSubmenu, getSettingsMenuSelectedValue),
+  Menu("Save", 8, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Load", 9, navigateToSubmenu, getSettingsMenuSelectedValue),
 };
 
 int getSelectedSensorMode() {
@@ -172,6 +174,17 @@ Menu* allMenus[menusLength] = {
   loadPatchMenuItems
 };
 
+void onUpdateMIDIChannel(byte newMidiChannel) {
+  currentChannel = newMidiChannel;
+}
+
+NumberSelectMenu MIDIChannel = NumberSelectMenu("MIDI Channel", &currentChannel, 0, onUpdateMIDIChannel, updateNumberSelectMenuScreen);
+
+NumberSelectMenu allNumberSelectMenus[2] = {
+  MIDIChannel,
+  MIDIChannel
+};
+
 byte menuLengths[menusLength] = {
   settingsLength,
   sensorLength,
@@ -188,6 +201,10 @@ byte menuLengths[menusLength] = {
 void navigateToSubmenu(byte target) {
   currentMenu = target;
   currentMenuItem = 0;
+}
+
+void navigateToNumberSelectSubmenu(byte target) {
+  currentNumberSelectMenu = target;
 }
 
 void changeSetting(byte setting) {
@@ -294,19 +311,25 @@ void loadPatch(byte startingLocation) {
   endMenuInteraction();
 }
 
-void drawTextWithShadow(char* text, byte x, byte y) {
-  byte offset = 2;
-  tft.setTextColor(0x545d);
-  tft.setCursor(x - offset, y + offset);
-  tft.print(text);
+void onPressUp() {
+  allNumberSelectMenus[currentNumberSelectMenu].onPressUp();
+}
 
-  tft.setTextColor(textColor);
-  tft.setCursor(x, y);
-  tft.print(text);
+void onPressDown() {
+  allNumberSelectMenus[currentNumberSelectMenu].onPressDown();
+}
 
+
+void onConfirm() {
+  allNumberSelectMenus[currentNumberSelectMenu].onConfirm();
 }
 
 void drawMenu() {
+  if (currentNumberSelectMenu) {
+    allNumberSelectMenus[currentNumberSelectMenu].onLoad();
+    return;
+  }
+
   tft.fillScreen(backgroundColor);
   int previousMenuItem = currentMenuItem - 1;
   if (previousMenuItem < 0) {

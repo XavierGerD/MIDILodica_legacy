@@ -164,15 +164,7 @@ void launchScreen() {
   tft.init(SCREEN_HEIGHT, SCREEN_WIDTH);
   tft.setRotation(1);
   tft.fillScreen(backgroundColor);
-  //  tft.drawBitmap(
-  //    SCREEN_WIDTH / 2 - bitmapWidth / 2,
-  //    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
-  //    epd_bitmap_MIDILodica, bitmapWidth, bitmapHeight, textColor);
-  //  tft.drawBitmap(
-  //    SCREEN_WIDTH / 2 - bitmapWidth / 2,
-  //    SCREEN_HEIGHT / 2 - bitmapHeight / 2,
-  //    epd_bitmap_MIDILodica_overlay, bitmapOverlayWidth, bitmapOverlayHeight, selectedColor
-  //  );
+
   tft.setTextSize(4);
   tft.setFont(&FreeMonoBold9pt7b);
 
@@ -199,12 +191,20 @@ void setup() {
   delay(1000);
   launchScreen();
   assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
+
+  delay(1000);
+  onPressUp();
+  delay(1000);
+  onPressUp();
+  delay(1000);
+  onPressUp();
+  delay(1000);
+  onConfirm();
+  delay(1000);
+  onPressDown();
 }
 
 void loop() {
-  //  delay(4000);
-  //  handleNavigatorDown();
-
   playMIDINotes();
   byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
 
@@ -342,5 +342,42 @@ void handleUnderButtonModes() {
     }
     lastUnderButtonState = nextUnderButtonState;
   }
+}
 
+
+void drawTextWithShadow(char* text, byte x, byte y) {
+  byte offset = 2;
+  tft.setTextColor(0x545d);
+  tft.setCursor(x - offset, y + offset);
+  tft.print(text);
+
+  tft.setTextColor(textColor);
+  tft.setCursor(x, y);
+  tft.print(text);
+}
+
+void updateNumberSelectMenuScreen(String menuName, String value, byte selectedIndex, bool isMaximumThreeDigits) {
+  tft.fillScreen(backgroundColor);
+  tft.setTextSize(2);
+
+  int menuNameLength = menuName.length() + 1;
+  char menuNameCharArray[menuNameLength];
+  menuName.toCharArray(menuNameCharArray, menuNameLength);
+
+  int valueLength = value.length() + 1;
+  char valueArray[valueLength];
+  value.toCharArray(valueArray, valueLength);
+
+  drawTextWithShadow(menuNameCharArray, 10, 50);
+
+  tft.setTextSize(4);
+
+  byte indexOffset = 1;
+  if (isMaximumThreeDigits) {
+    indexOffset = 2;
+  }
+  drawTextWithShadow(valueArray, 50, 120);
+  byte underscorePositionOffset = (4 * 11 * (indexOffset - selectedIndex));
+  
+  drawTextWithShadow("_", 50 + underscorePositionOffset, 120);
 }
