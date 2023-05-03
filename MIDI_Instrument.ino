@@ -3,10 +3,9 @@
 #include <MIDIUSB_Defs.h>
 #include <pitchToFrequency.h>
 #include <pitchToNote.h>
-#include "MIDILodica.h"
 #include "MIDIButton.h"
 #include "Menu.h"
-#include "StartingNote.h"
+#include "scales.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
@@ -61,40 +60,6 @@ byte startingNote = 60;
 
 NoteButton *noteButtons[rowsLength][columnsLength];
 
-const byte chromatic[] = {1};
-const byte ionian[] = {2, 2, 1, 2, 2, 2, 1};
-const byte dorian[] = {2, 1, 2, 2, 2, 1, 2};
-const byte phrygian[] = {1, 2, 2, 2, 1, 2, 2};
-const byte lydian[] = {2, 2, 2, 1, 2, 2, 1};
-const byte mixolydian[] = {2, 2, 1, 2, 2, 1, 2};
-const byte aeolian[] = {2, 1, 2, 2, 1, 2};
-const byte locrian[] = {1, 2, 2, 2, 1, 2, 2};
-const byte melodicMinor[] = {2, 1, 2, 2, 1, 3, 1};
-const byte pentatonicMajor[] = {2, 2, 3, 2, 3};
-const byte pentatonicMinor[] = {3, 2, 2, 3, 2};
-const byte wholeTone[] = {2};
-const byte octatonic21[] = {2, 1};
-const byte octatonic12[] = {1, 2};
-
-byte *scales[] = {
-  chromatic,
-  ionian,
-  dorian,
-  phrygian,
-  lydian,
-  mixolydian,
-  aeolian,
-  locrian,
-  melodicMinor,
-  pentatonicMajor,
-  pentatonicMinor,
-  wholeTone,
-  octatonic12,
-  octatonic21,
-};
-
-byte scaleLengths[] = {1, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 1, 2, 2 };
-
 // MIDIFlute config
 
 // Sensor modes:
@@ -123,7 +88,8 @@ byte currentStartingNote = 0;
 byte currentStartingOctave = 4;
 byte currentSensitivity = 1;
 
-byte currentChannel = 0;
+int currentChannel = 0;
+int sensorMIDICC = 0;
 
 byte settingsLength = 7;
 
@@ -192,16 +158,37 @@ void setup() {
   launchScreen();
   assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 
-  delay(1000);
-  onPressUp();
-  delay(1000);
-  onPressUp();
-  delay(1000);
-  onPressUp();
-  delay(1000);
+  delay(500);
+  handleNavigationSelect();
+  delay(500);
+  handleNavigatorUp();
+  delay(500);
+  handleNavigationSelect();
+  
+  delay(500);
   onConfirm();
-  delay(1000);
+  delay(500);
+  onPressUp();
+  delay(500);
+  onPressUp();
+  
+  delay(500);
+  onConfirm();
+  delay(500);
+  onPressUp();
+
+  delay(500);
+  onCancel();
+  delay(500);
   onPressDown();
+
+  delay(500);
+  onConfirm();
+  delay(500);
+  onConfirm();
+
+
+
 }
 
 void loop() {
@@ -288,63 +275,6 @@ void handleSensorOctaveShift(byte sensorVal) {
   }
 }
 
-void cancelAllNotes() {
-  byte buttonsCounter = 0;
-  for (byte i = 0; i < rowsLength; i++) {
-    for (byte j = 0; j < columnsLength; j++) {
-      noteButtons[i][j]->cancelNote();
-      buttonsCounter++;
-    }
-
-  }
-}
-
-void changeOctaveShift(byte newOctave) {
-  currentStartingOctave += newOctave;
-  if (currentStartingOctave > 7) {
-    currentStartingOctave = 6;
-  }
-  if (currentStartingOctave < 0) {
-    currentStartingOctave = 0;
-  }
-}
-
-void handleUnderButtonOctaveShift(byte octaveShiftAmount) {
-  changeOctaveShift(octaveShiftAmount);
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
-  cancelAllNotes();
-}
-
-void handleSustain(bool newState) {
-  byte sustainValue = newState ? 64 : 0;
-  midiEventPacket_t sutainPacket = {0x0B, 0xB0, 64, sustainValue};
-  MidiUSB.sendMIDI(sutainPacket);
-  MidiUSB.flush();
-}
-
-void handleUnderButtonModes() {
-  nextUnderButtonState = digitalRead(underButton);
-  if ((millis() - lastUnderButtonDebounce) > underButtonDebounceDelay && nextUnderButtonState != lastUnderButtonState) {
-    if (nextUnderButtonState) {
-      if (underButtonMode == 0 || underButtonMode == 1) {
-        byte octaveShiftAmount = underButtonMode == 0 ? 1 : -1;
-        handleUnderButtonOctaveShift(octaveShiftAmount);
-      }
-    } else {
-      if (underButtonMode == 0 || underButtonMode == 1) {
-        byte octaveShiftAmount = underButtonMode == 0 ? -1 : 1;
-        handleUnderButtonOctaveShift(octaveShiftAmount);
-      }
-    }
-
-    if (underButtonMode == 2) {
-      handleSustain(nextUnderButtonState);
-    }
-    lastUnderButtonState = nextUnderButtonState;
-  }
-}
-
-
 void drawTextWithShadow(char* text, byte x, byte y) {
   byte offset = 2;
   tft.setTextColor(0x545d);
@@ -378,6 +308,6 @@ void updateNumberSelectMenuScreen(String menuName, String value, byte selectedIn
   }
   drawTextWithShadow(valueArray, 50, 120);
   byte underscorePositionOffset = (4 * 11 * (indexOffset - selectedIndex));
-  
+
   drawTextWithShadow("_", 50 + underscorePositionOffset, 120);
 }

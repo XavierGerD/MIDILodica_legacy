@@ -2,7 +2,7 @@
 
 #define menusLength 10
 #define settingsLength 9
-#define sensorLength 4
+#define sensorLength 5
 #define stripLength 4
 #define scaleLength 14
 #define startingNoteLength 12
@@ -11,9 +11,9 @@
 #define underButtonLength 3
 #define patchLength 10
 
-byte currentMenu = 1;
-byte currentNumberSelectMenu = 1;
-byte currentMenuItem = 0;
+byte currentMenu = 0;
+int currentNumberSelectMenu = 0;
+int currentMenuItem = 0;
 
 int getSettingsMenuSelectedValue() {
   return -1;
@@ -26,7 +26,10 @@ Menu settingsMenuItems[settingsLength] = {
   Menu("Octave", 4, navigateToSubmenu, getSettingsMenuSelectedValue),
   Menu("Sensitivity", 5, navigateToSubmenu, getSettingsMenuSelectedValue),
   Menu("Under button", 6, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("MIDI Channel", 7, navigateToNumberSelectSubmenu, getSettingsMenuSelectedValue),
+
+  // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
+  Menu("MIDI Channel", 1, navigateToNumberSelectSubmenu, getSettingsMenuSelectedValue),
+
   Menu("Save", 8, navigateToSubmenu, getSettingsMenuSelectedValue),
   Menu("Load", 9, navigateToSubmenu, getSettingsMenuSelectedValue),
 };
@@ -35,15 +38,26 @@ int getSelectedSensorMode() {
   return sensorMode;
 }
 
+void changeSetting(byte setting) {
+  sensorMode = setting;
+  navigateToSubmenu(0);
+}
+
 Menu sensorModeMenuItems[sensorLength] =  {
   Menu("Velocity", 0, changeSetting, getSelectedSensorMode),
   Menu("Mod Wheel", 1, changeSetting, getSelectedSensorMode),
   Menu("Pitch Bend", 2, changeSetting, getSelectedSensorMode),
-  Menu("Octave Shift", 3, changeSetting, getSelectedSensorMode)
+  Menu("Octave Shift", 3, changeSetting, getSelectedSensorMode),
+  Menu("Custom CC", 1, navigateToNumberSelectSubmenu, getSelectedSensorMode),
 };
 
 int getSelectedStripMode() {
   return stripSensorMode;
+}
+
+void changeStripSetting(byte setting) {
+  stripSensorMode = setting;
+  navigateToSubmenu(0);
 }
 
 Menu stripModeMenuItems[stripLength] = {
@@ -55,6 +69,11 @@ Menu stripModeMenuItems[stripLength] = {
 
 int getSelectedScale() {
   return currentScale;
+}
+
+void changeScale(byte note) {
+  currentScale = currentMenuItem;
+  endMenuInteraction();
 }
 
 Menu scaleMenuItems[scaleLength] = {
@@ -78,6 +97,11 @@ int getStartingNote() {
   return currentStartingNote;
 }
 
+void changeStartingNote(byte note) {
+  currentStartingNote = note;
+  endMenuInteraction();
+}
+
 Menu startingNoteMenuItems[startingNoteLength] = {
   Menu("C", 0, changeStartingNote, getStartingNote),
   Menu("Db", 1, changeStartingNote, getStartingNote),
@@ -97,6 +121,11 @@ int getStartingOctave() {
   return currentStartingOctave;
 }
 
+void changeStartingOctave(byte octave) {
+  currentStartingOctave = octave;
+  endMenuInteraction();
+}
+
 Menu startingOctaveMenuItems[startingOctaveLength] = {
   Menu("0", 0, changeStartingOctave, getStartingOctave),
   Menu("1", 1, changeStartingOctave, getStartingOctave),
@@ -113,6 +142,11 @@ int getSensitivity() {
   return currentSensitivity;
 }
 
+void changeSensitivity(byte setting) {
+  currentSensitivity = setting;
+  endMenuInteraction();
+}
+
 Menu sensitivityMenuItems[sensitivityLength] = {
   Menu("Low", 0, changeSensitivity, getSensitivity),
   Menu("Medium", 1, changeSensitivity, getSensitivity),
@@ -124,6 +158,11 @@ int getUnderButtonMode() {
   return underButtonMode;
 }
 
+void changeUnderButtonMode(byte newValue) {
+  underButtonMode = newValue;
+  endMenuInteraction();
+}
+
 Menu underButtonMenuItems[underButtonLength] = {
   Menu("Octave Up", 0, changeUnderButtonMode, getUnderButtonMode),
   Menu("Octave Down", 1, changeUnderButtonMode, getUnderButtonMode),
@@ -132,119 +171,6 @@ Menu underButtonMenuItems[underButtonLength] = {
 
 int getPatch() {
   return -1;
-}
-
-Menu savePatchMenuItems[patchLength] = {
-  Menu("1", 0, savePatch, getPatch),
-  Menu("2", 1, savePatch, getPatch),
-  Menu("3", 2, savePatch, getPatch),
-  Menu("4", 3, savePatch, getPatch),
-  Menu("5", 4, savePatch, getPatch),
-  Menu("6", 5, savePatch, getPatch),
-  Menu("7", 6, savePatch, getPatch),
-  Menu("8", 7, savePatch, getPatch),
-  Menu("9", 8, savePatch, getPatch),
-  Menu("10", 9, savePatch, getPatch),
-};
-
-Menu loadPatchMenuItems[patchLength] = {
-  Menu("1", 0, loadPatch, getPatch),
-  Menu("2", 1, loadPatch, getPatch),
-  Menu("3", 2, loadPatch, getPatch),
-  Menu("4", 3, loadPatch, getPatch),
-  Menu("5", 4, loadPatch, getPatch),
-  Menu("6", 5, loadPatch, getPatch),
-  Menu("7", 6, loadPatch, getPatch),
-  Menu("8", 7, loadPatch, getPatch),
-  Menu("9", 8, loadPatch, getPatch),
-  Menu("10", 9, loadPatch, getPatch),
-};
-
-
-Menu* allMenus[menusLength] = {
-  settingsMenuItems,
-  sensorModeMenuItems,
-  stripModeMenuItems,
-  scaleMenuItems,
-  startingNoteMenuItems,
-  startingOctaveMenuItems,
-  sensitivityMenuItems,
-  underButtonMenuItems,
-  savePatchMenuItems,
-  loadPatchMenuItems
-};
-
-void onUpdateMIDIChannel(byte newMidiChannel) {
-  currentChannel = newMidiChannel;
-}
-
-NumberSelectMenu MIDIChannel = NumberSelectMenu("MIDI Channel", &currentChannel, 0, onUpdateMIDIChannel, updateNumberSelectMenuScreen);
-
-NumberSelectMenu allNumberSelectMenus[2] = {
-  MIDIChannel,
-  MIDIChannel
-};
-
-byte menuLengths[menusLength] = {
-  settingsLength,
-  sensorLength,
-  stripLength,
-  scaleLength,
-  startingNoteLength,
-  startingOctaveLength,
-  sensitivityLength,
-  underButtonLength,
-  patchLength,
-  patchLength
-};
-
-void navigateToSubmenu(byte target) {
-  currentMenu = target;
-  currentMenuItem = 0;
-}
-
-void navigateToNumberSelectSubmenu(byte target) {
-  currentNumberSelectMenu = target;
-}
-
-void changeSetting(byte setting) {
-  sensorMode = setting;
-  navigateToSubmenu(0);
-}
-
-void changeStripSetting(byte setting) {
-  stripSensorMode = setting;
-  navigateToSubmenu(0);
-}
-
-void endMenuInteraction() {
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
-  navigateToSubmenu(0);
-}
-
-void changeScale(byte note) {
-  currentScale = currentMenuItem;
-  endMenuInteraction();
-}
-
-void changeStartingNote(byte note) {
-  currentStartingNote = note;
-  endMenuInteraction();
-}
-
-void changeStartingOctave(byte octave) {
-  currentStartingOctave = octave;
-  endMenuInteraction();
-}
-
-void changeSensitivity(byte setting) {
-  currentSensitivity = setting;
-  endMenuInteraction();
-}
-
-void changeUnderButtonMode(byte newValue) {
-  underButtonMode = newValue;
-  endMenuInteraction();
 }
 
 void savePatch(byte startingLocation) {
@@ -279,6 +205,19 @@ void savePatch(byte startingLocation) {
   }
 }
 
+Menu savePatchMenuItems[patchLength] = {
+  Menu("1", 0, savePatch, getPatch),
+  Menu("2", 1, savePatch, getPatch),
+  Menu("3", 2, savePatch, getPatch),
+  Menu("4", 3, savePatch, getPatch),
+  Menu("5", 4, savePatch, getPatch),
+  Menu("6", 5, savePatch, getPatch),
+  Menu("7", 6, savePatch, getPatch),
+  Menu("8", 7, savePatch, getPatch),
+  Menu("9", 8, savePatch, getPatch),
+  Menu("10", 9, savePatch, getPatch),
+};
+
 void loadPatch(byte startingLocation) {
   byte startingAddress = startingLocation * settingsLength;
   for (byte i = 0; i < settingsLength; i++) {
@@ -311,134 +250,88 @@ void loadPatch(byte startingLocation) {
   endMenuInteraction();
 }
 
-void onPressUp() {
-  allNumberSelectMenus[currentNumberSelectMenu].onPressUp();
+
+Menu loadPatchMenuItems[patchLength] = {
+  Menu("1", 0, loadPatch, getPatch),
+  Menu("2", 1, loadPatch, getPatch),
+  Menu("3", 2, loadPatch, getPatch),
+  Menu("4", 3, loadPatch, getPatch),
+  Menu("5", 4, loadPatch, getPatch),
+  Menu("6", 5, loadPatch, getPatch),
+  Menu("7", 6, loadPatch, getPatch),
+  Menu("8", 7, loadPatch, getPatch),
+  Menu("9", 8, loadPatch, getPatch),
+  Menu("10", 9, loadPatch, getPatch),
+};
+
+
+Menu* allMenus[menusLength] = {
+  settingsMenuItems,
+  sensorModeMenuItems,
+  stripModeMenuItems,
+  scaleMenuItems,
+  startingNoteMenuItems,
+  startingOctaveMenuItems,
+  sensitivityMenuItems,
+  underButtonMenuItems,
+  savePatchMenuItems,
+  loadPatchMenuItems
+};
+
+void onUpdateMIDIChannel(int newMidiChannel) {
+  currentChannel = newMidiChannel;
 }
 
-void onPressDown() {
-  allNumberSelectMenus[currentNumberSelectMenu].onPressDown();
+int getMidiChannel() {
+  return currentChannel;
 }
 
 
-void onConfirm() {
-  allNumberSelectMenus[currentNumberSelectMenu].onConfirm();
+void onUpdateSensorMIDICC(int newMIDICC) {
+  Serial.println(newMIDICC);
+  sensorMIDICC = newMIDICC;
 }
 
-void drawMenu() {
-  if (currentNumberSelectMenu) {
-    allNumberSelectMenus[currentNumberSelectMenu].onLoad();
-    return;
-  }
-
-  tft.fillScreen(backgroundColor);
-  int previousMenuItem = currentMenuItem - 1;
-  if (previousMenuItem < 0) {
-    previousMenuItem = menuLengths[currentMenu] - 1;
-  }
-
-  int nextMenuItem = currentMenuItem + 1;
-  if (nextMenuItem > menuLengths[currentMenu - 1]) {
-    nextMenuItem = 0;
-  }
-
-  drawTextWithShadow(allMenus[currentMenu][previousMenuItem].menuName, 15, 33);
-
-  tft.fillRect(0, 60, tft.width(), 50, selectedColor);
-  drawTextWithShadow(allMenus[currentMenu][currentMenuItem].menuName, 15, 93);
-
-  drawTextWithShadow(allMenus[currentMenu][nextMenuItem].menuName, 15, 153);
-
-  int selectedMenu = allMenus[currentMenu]->getSelectedMenu();
-
-  if (selectedMenu == -1) {
-    return;
-  }
-
-  if (previousMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 25, 15, selectedColor);
-  }
-
-  if (currentMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 85, 15, selectedColor);
-  }
-
-  if (nextMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 145, 15, selectedColor);
-  }
+int getSensorMIDICC() {
+  return sensorMIDICC;
 }
 
-boolean lastButtonState1 = HIGH;
-boolean newButtonState1 = HIGH;
+NumberSelectMenu MIDIChannel = NumberSelectMenu("MIDI Channel", getMidiChannel, false, onUpdateMIDIChannel, updateNumberSelectMenuScreen);
+NumberSelectMenu SensorMIDICC = NumberSelectMenu("MIDI CC", getSensorMIDICC, true, onUpdateSensorMIDICC, updateNumberSelectMenuScreen);
 
-boolean lastButtonState2 = HIGH;
-boolean newButtonState2 = HIGH;
+NumberSelectMenu allNumberSelectMenus[] = {
+  MIDIChannel,
+  SensorMIDICC
+};
 
-boolean lastButtonState3 = HIGH;
-boolean newButtonState3 = HIGH;
+byte menuLengths[menusLength] = {
+  settingsLength,
+  sensorLength,
+  stripLength,
+  scaleLength,
+  startingNoteLength,
+  startingOctaveLength,
+  sensitivityLength,
+  underButtonLength,
+  patchLength,
+  patchLength
+};
 
-const byte menuDebounceDelay = 5;
-unsigned long lastMenuDebounce = 0;
-
-void ManageNavigationButtons() {
-  for (byte i = 0; i < rowsLength; i++) {
-    bool pressedButtonState = digitalRead(rows[i]);
-    if ((millis() - lastMenuDebounce) > menuDebounceDelay) {
-
-    }
-    //    switch(i){
-    //      case 1:
-    //
-    //    }
-  }
-  newButtonState1 = digitalRead(menuDown);
-  if ((millis() - lastMenuDebounce) > menuDebounceDelay && newButtonState1 != lastButtonState1) {
-    if (newButtonState1) {
-      lastMenuDebounce = millis();
-      handleNavigatorDown();
-    }
-
-    lastButtonState1 = newButtonState1;
-  }
-
-  newButtonState2 = digitalRead(menuSelect);
-  if ((millis() - lastMenuDebounce) > menuDebounceDelay && newButtonState2 != lastButtonState2) {
-    if (newButtonState2) {
-      lastMenuDebounce = millis();
-      handleNavigationSelect();
-    }
-
-    lastButtonState2 = newButtonState2;
-  }
-
-
-  newButtonState3 = digitalRead(menuUp);
-  if ((millis() - lastMenuDebounce) > menuDebounceDelay && newButtonState3 != lastButtonState3) {
-    if (newButtonState3) {
-      lastMenuDebounce = millis();
-      handleNavigatorUp();
-    }
-    lastButtonState3 = newButtonState3;
-  }
+void navigateToSubmenu(byte target) {
+  currentMenu = target;
+  currentMenuItem = 0;
 }
 
-void handleNavigationSelect() {
-  Menu currentItem = allMenus[currentMenu][currentMenuItem];
-  currentItem.onAction(currentItem.submenuTarget);
-  drawMenu();
+void navigateToNumberSelectSubmenu(byte target) {
+  currentNumberSelectMenu = target;
 }
 
-void handleNavigatorDown() {
-  currentMenuItem += 1;
-  if (currentMenuItem == menuLengths[currentMenu] - 1) {
-    currentMenuItem = 0;
-  }
-  drawMenu();
+void endMenuInteraction() {
+  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
+  navigateToSubmenu(0);
 }
 
-void handleNavigatorUp() {
-  currentMenuItem -= 1;
-  if (currentMenuItem < 0) {
-    currentMenuItem = menuLengths[currentMenu] - 1;
-  }
-  drawMenu();
+void endNumberSelectMenuInteraction() {
+  currentNumberSelectMenu = -1;
+  navigateToSubmenu(0);
 }
