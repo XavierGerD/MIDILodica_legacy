@@ -4,8 +4,7 @@ void assignNotesToButtons(byte startingNote, byte startingOctave, byte scale[], 
   
   for (byte i = 0; i < rowsLength; i++) {
     for (byte j = 0; j < columnsLength; j++) {
-      delete noteButtons[i][j];
-      noteButtons[i][j] = new NoteButton(i, j, currentNote);
+      noteButtons[i][j]->changeButtonNote(currentNote);
       currentNote += scale[scaleCounter];
       scaleCounter++;
       if (scaleCounter == lengthOfScale) {

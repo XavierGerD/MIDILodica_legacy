@@ -14,7 +14,7 @@ const byte wholeTone[] = {2};
 const byte octatonic21[] = {2, 1};
 const byte octatonic12[] = {1, 2};
 
-byte *scales[] = {
+const byte *scales[] = {
   chromatic,
   ionian,
   dorian,

@@ -3,7 +3,7 @@
 #define menusLength 10
 #define settingsLength 9
 #define sensorLength 5
-#define stripLength 4
+#define stripLength 5
 #define scaleLength 14
 #define startingNoteLength 12
 #define startingOctaveLength 9
@@ -15,7 +15,8 @@ byte currentMenu = 0;
 int currentNumberSelectMenu = 0;
 int currentMenuItem = 0;
 
-int getSettingsMenuSelectedValue() {
+int getSettingsMenuSelectedValue()
+{
   return -1;
 }
 
@@ -34,28 +35,34 @@ Menu settingsMenuItems[settingsLength] = {
   Menu("Load", 9, navigateToSubmenu, getSettingsMenuSelectedValue),
 };
 
-int getSelectedSensorMode() {
+int getSelectedSensorMode()
+{
   return sensorMode;
 }
 
-void changeSetting(byte setting) {
+void changeSetting(byte setting)
+{
   sensorMode = setting;
   navigateToSubmenu(0);
 }
 
-Menu sensorModeMenuItems[sensorLength] =  {
+Menu sensorModeMenuItems[sensorLength] = {
   Menu("Velocity", 0, changeSetting, getSelectedSensorMode),
   Menu("Mod Wheel", 1, changeSetting, getSelectedSensorMode),
   Menu("Pitch Bend", 2, changeSetting, getSelectedSensorMode),
   Menu("Octave Shift", 3, changeSetting, getSelectedSensorMode),
+
+  // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
   Menu("Custom CC", 1, navigateToNumberSelectSubmenu, getSelectedSensorMode),
 };
 
-int getSelectedStripMode() {
+int getSelectedStripMode()
+{
   return stripSensorMode;
 }
 
-void changeStripSetting(byte setting) {
+void changeStripSetting(byte setting)
+{
   stripSensorMode = setting;
   navigateToSubmenu(0);
 }
@@ -64,14 +71,19 @@ Menu stripModeMenuItems[stripLength] = {
   Menu("Velocity", 0, changeStripSetting, getSelectedStripMode),
   Menu("Mod Wheel", 1, changeStripSetting, getSelectedStripMode),
   Menu("Pitch Bend", 2, changeStripSetting, getSelectedStripMode),
-  Menu("Octave Shift", 3, changeStripSetting, getSelectedStripMode)
+  Menu("Octave Shift", 3, changeStripSetting, getSelectedStripMode),
+
+  // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
+  Menu("Custom CC", 2, navigateToNumberSelectSubmenu, getSelectedSensorMode),
 };
 
-int getSelectedScale() {
+int getSelectedScale()
+{
   return currentScale;
 }
 
-void changeScale(byte note) {
+void changeScale(byte note)
+{
   currentScale = currentMenuItem;
   endMenuInteraction();
 }
@@ -93,11 +105,13 @@ Menu scaleMenuItems[scaleLength] = {
   Menu("Octatonic 1, 2", 13, changeScale, getSelectedScale),
 };
 
-int getStartingNote() {
+int getStartingNote()
+{
   return currentStartingNote;
 }
 
-void changeStartingNote(byte note) {
+void changeStartingNote(byte note)
+{
   currentStartingNote = note;
   endMenuInteraction();
 }
@@ -117,11 +131,13 @@ Menu startingNoteMenuItems[startingNoteLength] = {
   Menu("B", 11, changeStartingNote, getStartingNote),
 };
 
-int getStartingOctave() {
+int getStartingOctave()
+{
   return currentStartingOctave;
 }
 
-void changeStartingOctave(byte octave) {
+void changeStartingOctave(byte octave)
+{
   currentStartingOctave = octave;
   endMenuInteraction();
 }
@@ -138,11 +154,13 @@ Menu startingOctaveMenuItems[startingOctaveLength] = {
   Menu("8", 8, changeStartingOctave, getStartingOctave),
 };
 
-int getSensitivity() {
+int getSensitivity()
+{
   return currentSensitivity;
 }
 
-void changeSensitivity(byte setting) {
+void changeSensitivity(byte setting)
+{
   currentSensitivity = setting;
   endMenuInteraction();
 }
@@ -154,11 +172,13 @@ Menu sensitivityMenuItems[sensitivityLength] = {
   Menu("Very High", 3, changeSensitivity, getSensitivity),
 };
 
-int getUnderButtonMode() {
+int getUnderButtonMode()
+{
   return underButtonMode;
 }
 
-void changeUnderButtonMode(byte newValue) {
+void changeUnderButtonMode(byte newValue)
+{
   underButtonMode = newValue;
   endMenuInteraction();
 }
@@ -169,15 +189,19 @@ Menu underButtonMenuItems[underButtonLength] = {
   Menu("Sustain", 2, changeUnderButtonMode, getUnderButtonMode),
 };
 
-int getPatch() {
+int getPatch()
+{
   return -1;
 }
 
-void savePatch(byte startingLocation) {
+void savePatch(byte startingLocation)
+{
   byte startingAddress = startingLocation * settingsLength;
-  for (byte i = 0; i < settingsLength; i++) {
+  for (byte i = 0; i < settingsLength; i++)
+  {
     byte currentAddress = i + startingAddress;
-    switch (i) {
+    switch (i)
+    {
       case 0:
         EEPROM.write(currentAddress, sensorMode);
         break;
@@ -199,7 +223,8 @@ void savePatch(byte startingLocation) {
       case 6:
         EEPROM.write(currentAddress, stripSensorMode);
         break;
-      default: break;
+      default:
+        break;
     }
     endMenuInteraction();
   }
@@ -218,12 +243,15 @@ Menu savePatchMenuItems[patchLength] = {
   Menu("10", 9, savePatch, getPatch),
 };
 
-void loadPatch(byte startingLocation) {
+void loadPatch(byte startingLocation)
+{
   byte startingAddress = startingLocation * settingsLength;
-  for (byte i = 0; i < settingsLength; i++) {
+  for (byte i = 0; i < settingsLength; i++)
+  {
     byte currentAddress = i + startingAddress;
     byte EEPROMVal = EEPROM.read(currentAddress);
-    switch (i) {
+    switch (i)
+    {
       case 0:
         sensorMode = EEPROMVal;
         break;
@@ -250,7 +278,6 @@ void loadPatch(byte startingLocation) {
   endMenuInteraction();
 }
 
-
 Menu loadPatchMenuItems[patchLength] = {
   Menu("1", 0, loadPatch, getPatch),
   Menu("2", 1, loadPatch, getPatch),
@@ -264,8 +291,7 @@ Menu loadPatchMenuItems[patchLength] = {
   Menu("10", 9, loadPatch, getPatch),
 };
 
-
-Menu* allMenus[menusLength] = {
+Menu *allMenus[menusLength] = {
   settingsMenuItems,
   sensorModeMenuItems,
   stripModeMenuItems,
@@ -278,30 +304,47 @@ Menu* allMenus[menusLength] = {
   loadPatchMenuItems
 };
 
-void onUpdateMIDIChannel(int newMidiChannel) {
+void onUpdateMIDIChannel(int newMidiChannel)
+{
   currentChannel = newMidiChannel;
 }
 
-int getMidiChannel() {
+int getMidiChannel()
+{
   return currentChannel;
 }
 
-
-void onUpdateSensorMIDICC(int newMIDICC) {
-  Serial.println(newMIDICC);
+void onUpdateSensorMIDICC(int newMIDICC)
+{
+  sensorMode = 4;
   sensorMIDICC = newMIDICC;
 }
 
-int getSensorMIDICC() {
+int getSensorMIDICC()
+{
   return sensorMIDICC;
 }
 
+void onUpdateStripMIDICC(int newMIDICC)
+{
+  stripSensorMode = 4;
+  stripMIDICC = newMIDICC;
+}
+
+int getStripMIDICC()
+{
+  return stripMIDICC;
+}
+
+
 NumberSelectMenu MIDIChannel = NumberSelectMenu("MIDI Channel", getMidiChannel, false, onUpdateMIDIChannel, updateNumberSelectMenuScreen);
 NumberSelectMenu SensorMIDICC = NumberSelectMenu("MIDI CC", getSensorMIDICC, true, onUpdateSensorMIDICC, updateNumberSelectMenuScreen);
+NumberSelectMenu StripMIDICC = NumberSelectMenu("MIDI CC", getStripMIDICC, true, onUpdateStripMIDICC, updateNumberSelectMenuScreen);
 
 NumberSelectMenu allNumberSelectMenus[] = {
   MIDIChannel,
-  SensorMIDICC
+  SensorMIDICC,
+  StripMIDICC
 };
 
 byte menuLengths[menusLength] = {
@@ -317,21 +360,25 @@ byte menuLengths[menusLength] = {
   patchLength
 };
 
-void navigateToSubmenu(byte target) {
+void navigateToSubmenu(byte target)
+{
   currentMenu = target;
   currentMenuItem = 0;
 }
 
-void navigateToNumberSelectSubmenu(byte target) {
+void navigateToNumberSelectSubmenu(byte target)
+{
   currentNumberSelectMenu = target;
 }
 
-void endMenuInteraction() {
+void endMenuInteraction()
+{
   assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
   navigateToSubmenu(0);
 }
 
-void endNumberSelectMenuInteraction() {
+void endNumberSelectMenuInteraction()
+{
   currentNumberSelectMenu = -1;
   navigateToSubmenu(0);
 }

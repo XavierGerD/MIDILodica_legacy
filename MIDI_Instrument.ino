@@ -3,9 +3,9 @@
 #include <MIDIUSB_Defs.h>
 #include <pitchToFrequency.h>
 #include <pitchToNote.h>
-#include "MIDIButton.h"
+#include "NoteButton.h"
 #include "Menu.h"
-#include "scales.h"
+#include "Scales.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
@@ -67,6 +67,7 @@ NoteButton *noteButtons[rowsLength][columnsLength];
 // 1 = Mod Wheel
 // 2 = Pitch Bend
 // 3 = Octave Shift
+// 4 = Custom CC
 byte sensorMode = 1;
 
 // Under Button Modes:
@@ -75,12 +76,12 @@ byte sensorMode = 1;
 // 2 = Sustain
 byte underButtonMode = 0;
 
-
 // Strip pot modes:
 // 0 = Velocity
 // 1 = Mod Wheel
 // 2 = Pitch Bend
 // 3 = Octave Shift
+// 4 = Custom CC
 byte stripSensorMode = 0;
 
 byte currentScale = 0;
@@ -90,6 +91,7 @@ byte currentSensitivity = 1;
 
 int currentChannel = 0;
 int sensorMIDICC = 0;
+int stripMIDICC = 0;
 
 byte settingsLength = 7;
 
@@ -98,16 +100,11 @@ byte sensorOctaveShift = 0;
 byte sensorSensitivities[4] = {200, 175, 150, 125};
 byte minimumSensitivity = 100;
 
-byte lastUnderButtonState = HIGH;
-byte nextUnderButtonState = LOW;
-long lastUnderButtonDebounce;
-const byte underButtonDebounceDelay = 5;
-
 uint8_t sensorValue;
-int nextVal;
+uint8_t nextVal;
 
 uint8_t stripVal;
-int nextStripVal;
+uint8_t nextStripVal;
 
 uint8_t velocity = 127;
 
@@ -123,7 +120,7 @@ void showSplashScreen() {
     tft.print("LODICA");
   }
 
-  delay(1000);
+  delay(3000);
 }
 
 void launchScreen() {
@@ -157,37 +154,35 @@ void setup() {
   delay(1000);
   launchScreen();
   assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
-
-  delay(500);
-  handleNavigationSelect();
-  delay(500);
-  handleNavigatorUp();
-  delay(500);
-  handleNavigationSelect();
-  
-  delay(500);
-  onConfirm();
-  delay(500);
-  onPressUp();
-  delay(500);
-  onPressUp();
-  
-  delay(500);
-  onConfirm();
-  delay(500);
-  onPressUp();
-
-  delay(500);
-  onCancel();
-  delay(500);
-  onPressDown();
-
-  delay(500);
-  onConfirm();
-  delay(500);
-  onConfirm();
-
-
+  //
+  //  delay(500);
+  //  handleNavigationSelect();
+  //  delay(500);
+  //  handleNavigatorUp();
+  //  delay(500);
+  //  handleNavigationSelect();
+  //
+  //  delay(500);
+  //  handleNavigationSelect();
+  //  delay(500);
+  //  handleNavigatorUp();
+  //  delay(500);
+  //  handleNavigatorUp();
+  //
+  //  delay(500);
+  //  handleNavigationSelect();
+  //  delay(500);
+  //  handleNavigatorUp();
+  //
+  //  delay(500);
+  //  handleNavigationCancel();
+  //  delay(500);
+  //  handleNavigatorDown();
+  //
+  //    delay(500);
+  //  handleNavigationSelect();
+  //    delay(500);
+  //  handleNavigationSelect();
 
 }
 
@@ -224,13 +219,16 @@ void handleSensorModes(byte sensorVal) {
       velocity = sensorVal;
     case 1:
     default:
-      midiEventPacket_t ccChange = {0x0B, 0xB0, 1, sensorVal};
-      MidiUSB.sendMIDI(ccChange);
+      midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
+      MidiUSB.sendMIDI(ccModWheel);
     case 2:
-      midiEventPacket_t pitchBendChange = {0x0B, 0xE0, 1, sensorVal};
-      MidiUSB.sendMIDI(pitchBendChange);
+      midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0, 1, sensorVal};
+      MidiUSB.sendMIDI(sensorPitchBendChange);
     case 3:
       handleSensorOctaveShift(sensorVal);
+    case 4:
+      midiEventPacket_t ccMessage = {0x0B, 0xB0, sensorMIDICC, sensorVal};
+      MidiUSB.sendMIDI(ccMessage);
   }
 
   MidiUSB.flush();
@@ -245,10 +243,13 @@ void handleStripVal(byte stripVal) {
       midiEventPacket_t ccChange = {0x0B, 0xB0, 1, stripVal};
       MidiUSB.sendMIDI(ccChange);
     case 2:
-      midiEventPacket_t pitchBendChange = {0x0B, 0xE0, 1, stripVal};
-      MidiUSB.sendMIDI(pitchBendChange);
+      midiEventPacket_t stripPitchBendChange = {0x0B, 0xE0, 1, stripVal};
+      MidiUSB.sendMIDI(stripPitchBendChange);
     case 3:
       handleSensorOctaveShift(stripVal);
+    case 4:
+      midiEventPacket_t ccMessage = {0x0B, 0xB0, stripMIDICC, stripVal};
+      MidiUSB.sendMIDI(ccMessage);
   }
 
   MidiUSB.flush();
@@ -298,7 +299,8 @@ void updateNumberSelectMenuScreen(String menuName, String value, byte selectedIn
   char valueArray[valueLength];
   value.toCharArray(valueArray, valueLength);
 
-  drawTextWithShadow(menuNameCharArray, 10, 50);
+  byte menuNameX = (tft.width() / 2) - (22 * menuName.length() / 2);
+  drawTextWithShadow(menuNameCharArray, menuNameX, 50);
 
   tft.setTextSize(4);
 
@@ -306,8 +308,10 @@ void updateNumberSelectMenuScreen(String menuName, String value, byte selectedIn
   if (isMaximumThreeDigits) {
     indexOffset = 2;
   }
-  drawTextWithShadow(valueArray, 50, 120);
-  byte underscorePositionOffset = (4 * 11 * (indexOffset - selectedIndex));
 
-  drawTextWithShadow("_", 50 + underscorePositionOffset, 120);
+  byte textX = (tft.width() / 2) - (44 * value.length() / 2);
+  drawTextWithShadow(valueArray, textX, 120);
+
+  byte underscorePositionOffset = (44 * (indexOffset - selectedIndex));
+  drawTextWithShadow("_", textX + underscorePositionOffset, 120);
 }

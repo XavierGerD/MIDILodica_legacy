@@ -1,13 +1,21 @@
 
-boolean lastButtonState1 = HIGH;
-boolean newButtonState1 = HIGH;
+boolean lastUpButtonState = HIGH;
+boolean newUpButtonState = HIGH;
 
-boolean lastButtonState2 = HIGH;
-boolean newButtonState2 = HIGH;
+boolean lastDownButtonState = HIGH;
+boolean newDownButtonState = HIGH;
 
-boolean lastButtonState3 = HIGH;
-boolean newButtonState3 = HIGH;
+boolean lastSelectButtonState = HIGH;
+boolean newSelectButtonState = HIGH;
 
+boolean lastCancelButtonState = HIGH;
+boolean newCancelButtonState = HIGH;
+
+boolean lastUnderButtonState = HIGH;
+boolean newUnderButtonState = LOW;
+
+// Since the debounce delay is so short, it should be fine
+// to use a single variable for all debounces.
 const byte menuDebounceDelay = 5;
 unsigned long lastMenuDebounce = 0;
 
@@ -15,51 +23,73 @@ void ManageNavigationButtons() {
   for (byte i = 0; i < rowsLength; i++) {
     bool pressedButtonState = digitalRead(rows[i]);
     if ((millis() - lastMenuDebounce) > menuDebounceDelay) {
-
+      switch (i) {
+        case 0:
+          if (newDownButtonState && !lastDownButtonState) {
+            handleNavigatorDown();
+          }
+          lastDownButtonState = newDownButtonState;
+          break;
+        case 1:
+          if (newSelectButtonState && !lastSelectButtonState) {
+            handleNavigationSelect();
+          }
+          lastSelectButtonState = newSelectButtonState;
+          break;
+        case 2:
+          if (newCancelButtonState && !lastCancelButtonState) {
+            handleNavigationCancel();
+          }
+          lastCancelButtonState = newCancelButtonState;
+          break;
+        case 3:
+          if (newUpButtonState && !lastUpButtonState) {
+            handleNavigatorUp();
+          }
+          lastUpButtonState = newUpButtonState;
+          break;
+        case 4:
+          // Not navigation technically, but it's simpler to include it
+          // in this loop. We want to call this function both on button
+          // press and release, as opposed to other buttons which
+          // are only actiaved on press.
+          if (newUnderButtonState != lastUnderButtonState) {
+            handleUnderButtonModes();
+          }
+          lastUnderButtonState = newUnderButtonState;
+          break;
+      }
     }
-    //    switch(i){
-    //      case 1:
-    //
-    //    }
-  }
-  newButtonState1 = digitalRead(menuDown);
-  if ((millis() - lastMenuDebounce) > menuDebounceDelay && newButtonState1 != lastButtonState1) {
-    if (newButtonState1) {
-      lastMenuDebounce = millis();
-      handleNavigatorDown();
-    }
-
-    lastButtonState1 = newButtonState1;
-  }
-
-  newButtonState2 = digitalRead(menuSelect);
-  if ((millis() - lastMenuDebounce) > menuDebounceDelay && newButtonState2 != lastButtonState2) {
-    if (newButtonState2) {
-      lastMenuDebounce = millis();
-      handleNavigationSelect();
-    }
-
-    lastButtonState2 = newButtonState2;
-  }
-
-
-  newButtonState3 = digitalRead(menuUp);
-  if ((millis() - lastMenuDebounce) > menuDebounceDelay && newButtonState3 != lastButtonState3) {
-    if (newButtonState3) {
-      lastMenuDebounce = millis();
-      handleNavigatorUp();
-    }
-    lastButtonState3 = newButtonState3;
   }
 }
 
 void handleNavigationSelect() {
+  if (currentNumberSelectMenu > 0) {
+    allNumberSelectMenus[currentNumberSelectMenu].onConfirm();
+    return;
+  }
+
   Menu currentItem = allMenus[currentMenu][currentMenuItem];
   currentItem.onAction(currentItem.submenuTarget);
   drawMenu();
 }
 
+void handleNavigationCancel() {
+  if (currentNumberSelectMenu > 0) {
+    allNumberSelectMenus[currentNumberSelectMenu].onCancel();
+    return;
+  }
+
+  endMenuInteraction();
+  drawMenu();
+}
+
 void handleNavigatorDown() {
+  if (currentNumberSelectMenu > 0) {
+    allNumberSelectMenus[currentNumberSelectMenu].onPressDown();
+    return;
+  }
+
   currentMenuItem += 1;
   if (currentMenuItem == menuLengths[currentMenu] - 1) {
     currentMenuItem = 0;
@@ -68,25 +98,14 @@ void handleNavigatorDown() {
 }
 
 void handleNavigatorUp() {
+  if (currentNumberSelectMenu > 0) {
+    allNumberSelectMenus[currentNumberSelectMenu].onPressUp();
+    return;
+  }
+
   currentMenuItem -= 1;
   if (currentMenuItem < 0) {
     currentMenuItem = menuLengths[currentMenu] - 1;
   }
   drawMenu();
-}
-
-
-void onPressUp() {
-  allNumberSelectMenus[currentNumberSelectMenu].onPressUp();
-}
-
-void onPressDown() {
-  allNumberSelectMenus[currentNumberSelectMenu].onPressDown();
-}
-
-void onConfirm() {
-  allNumberSelectMenus[currentNumberSelectMenu].onConfirm();
-}
-void onCancel() {
-    allNumberSelectMenus[currentNumberSelectMenu].onCancel();
 }

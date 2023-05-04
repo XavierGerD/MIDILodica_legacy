@@ -47,4 +47,14 @@ class NoteButton {
       MidiUSB.sendMIDI(noteOff);
       MidiUSB.flush();
     }
+
+    void changeButtonNote(byte note) {
+      this -> note = note;
+      
+      // Used for octave changes mainly. Rearticulates the note if it is changed while playing.
+      if (lastState) {
+        cancelNote();
+        sendNote();
+      }
+    }
 };

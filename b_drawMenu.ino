@@ -1,4 +1,3 @@
-
 void drawMenu() {
   tft.setTextSize(2);
 
