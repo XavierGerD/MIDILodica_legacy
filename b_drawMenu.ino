@@ -1,10 +1,11 @@
 void drawMenu() {
   tft.setTextSize(2);
 
-  if (currentNumberSelectMenu > 0) {
+  if (currentNumberSelectMenu >= 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onLoad();
     return;
   }
+  Serial.println("before fill");
 
   tft.fillScreen(backgroundColor);
 

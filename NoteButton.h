@@ -37,13 +37,13 @@ class NoteButton {
     }
 
     void sendNote() {
-      midiEventPacket_t noteOn = {0x09, 0x90, lastPlayedNote, noteVelocity};
+      midiEventPacket_t noteOn = {0x09, 0x90, note, noteVelocity};
       MidiUSB.sendMIDI(noteOn);
       MidiUSB.flush();
     }
 
     void cancelNote() {
-      midiEventPacket_t noteOff = {0x08, 0x80, lastPlayedNote, noteVelocity};
+      midiEventPacket_t noteOff = {0x08, 0x80, note, noteVelocity};
       MidiUSB.sendMIDI(noteOff);
       MidiUSB.flush();
     }

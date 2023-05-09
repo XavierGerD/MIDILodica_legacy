@@ -10,7 +10,6 @@ void playMIDINotes() {
     digitalWrite(rows[i], LOW);
 
     for (byte j = 0; j < columnsLength; j++) {
-      digitalWrite(columns[j], HIGH);
       pressedNoteButtonState = digitalRead(columns[j]);
 
       // Only detect state changes.
@@ -27,11 +26,7 @@ void playMIDINotes() {
       }
       noteButtons[i][j]->lastState = pressedNoteButtonState;
       lastDebounce = millis();
-
-      digitalWrite(columns[j], LOW);
     }
-    
-    digitalWrite(rows[i], LOW);
     pinMode(rows[i], INPUT);
   }
 }

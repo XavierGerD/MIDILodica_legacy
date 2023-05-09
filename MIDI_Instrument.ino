@@ -9,7 +9,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
-#include <SPI.h>
 
 #define numberOfButtons 35
 
@@ -82,7 +81,7 @@ byte underButtonMode = 0;
 // 2 = Pitch Bend
 // 3 = Octave Shift
 // 4 = Custom CC
-byte stripSensorMode = 0;
+byte stripSensorMode = 2;
 
 byte currentScale = 0;
 byte currentStartingNote = 0;
@@ -147,12 +146,11 @@ void setup() {
 
   for (byte j = 0; j < columnsLength; j++) {
     pinMode(columns[j], INPUT_PULLUP);
+    digitalWrite(columns[j], HIGH);
   }
 
   pinMode(C8, INPUT_PULLUP);
   digitalWrite(C8, HIGH);
-
-//  NoteButton rando = NoteButton(
 
   launchScreen();
   initializeButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
@@ -160,44 +158,47 @@ void setup() {
 
 void loop() {
   playMIDINotes();
-//  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
+  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
 
   // Avoid unwanted noise when idle.
-//  if (constrainedSensorVal <= 105) {
-//    constrainedSensorVal = 100;
-//  }
+  if (constrainedSensorVal <= 105) {
+    constrainedSensorVal = 100;
+  }
 
-//  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
-//
-//  if (sensorValue != nextVal) {
-//    handleSensorModes(sensorValue);
-//    nextVal = sensorValue;
-//  }
-//
-//  stripVal = map(analogRead(stripPin), 1023, 0, 0, 127);
-//
-//  if (stripVal != nextStripVal) {
-//    handleStripVal(stripVal);
-//    nextStripVal = stripVal;
-//  }
+  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
 
-//  handleUnderButtonModes();
-//  ManageNavigationButtons();
+  if (sensorValue != nextVal) {
+    handleSensorModes(sensorValue);
+    nextVal = sensorValue;
+  }
+
+  stripVal = map(analogRead(stripPin), 0, 1023, 0, 127);
+
+  if (stripVal != nextStripVal) {
+    handleStripVal(stripVal);
+    nextStripVal = stripVal;
+  }
+
+  ManageNavigationButtons();
 }
 
 void handleSensorModes(byte sensorVal) {
   switch (sensorMode) {
     case 0:
       velocity = sensorVal;
+      break;
     case 1:
     default:
-      midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, 127};
+      midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
       MidiUSB.sendMIDI(ccModWheel);
+      break;
     case 2:
       midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0, 1, sensorVal};
       MidiUSB.sendMIDI(sensorPitchBendChange);
+      break;
     case 3:
       handleSensorOctaveShift(sensorVal);
+      break;
     case 4:
       midiEventPacket_t ccMessage = {0x0B, 0xB0, sensorMIDICC, sensorVal};
       MidiUSB.sendMIDI(ccMessage);
@@ -210,15 +211,19 @@ void handleStripVal(byte stripVal) {
   switch (stripSensorMode) {
     case 0:
       velocity = stripVal;
+      break;
     case 1:
     default:
       midiEventPacket_t ccChange = {0x0B, 0xB0, 1, stripVal};
       MidiUSB.sendMIDI(ccChange);
+      break;
     case 2:
       midiEventPacket_t stripPitchBendChange = {0x0B, 0xE0, 1, stripVal};
       MidiUSB.sendMIDI(stripPitchBendChange);
+      break;
     case 3:
       handleSensorOctaveShift(stripVal);
+      break;
     case 4:
       midiEventPacket_t ccMessage = {0x0B, 0xB0, stripMIDICC, stripVal};
       MidiUSB.sendMIDI(ccMessage);

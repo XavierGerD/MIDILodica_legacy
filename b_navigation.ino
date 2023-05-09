@@ -1,16 +1,8 @@
 
 boolean lastUpButtonState = HIGH;
-boolean newUpButtonState = HIGH;
-
 boolean lastDownButtonState = HIGH;
-boolean newDownButtonState = HIGH;
-
 boolean lastSelectButtonState = HIGH;
-boolean newSelectButtonState = HIGH;
-
 boolean lastCancelButtonState = HIGH;
-boolean newCancelButtonState = HIGH;
-
 boolean lastUnderButtonState = HIGH;
 boolean newUnderButtonState = LOW;
 
@@ -19,47 +11,57 @@ boolean newUnderButtonState = LOW;
 const byte menuDebounceDelay = 5;
 unsigned long lastMenuDebounce = 0;
 
+void handleButton(byte index, bool pressedButtonState) {
+  Serial.println(index);
+  switch (index) {
+    case 0:
+      if (!pressedButtonState && !lastDownButtonState) {
+        handleNavigatorDown();
+      }
+      lastDownButtonState = pressedButtonState;
+      break;
+    case 1:
+      if (!pressedButtonState && !lastSelectButtonState) {
+        handleNavigationSelect();
+      }
+      lastSelectButtonState = pressedButtonState;
+      break;
+    case 2:
+      if (!pressedButtonState && !lastCancelButtonState) {
+        handleNavigationCancel();
+      }
+      lastCancelButtonState = pressedButtonState;
+      break;
+    case 3:
+      if (!pressedButtonState && !lastUpButtonState) {
+        handleNavigatorUp();
+      }
+      lastUpButtonState = pressedButtonState;
+      break;
+    case 4:
+      // Not navigation technically, but it's simpler to include it
+      // in this loop. We want to call this function both on button
+      // press and release, as opposed to other buttons which
+      // are only actiaved on press.
+      if (!pressedButtonState != lastUnderButtonState) {
+        handleUnderButtonModes();
+      }
+      lastUnderButtonState = pressedButtonState;
+      break;
+  }
+}
+
 void ManageNavigationButtons() {
   for (byte i = 0; i < rowsLength; i++) {
-    bool pressedButtonState = digitalRead(rows[i]);
+    pinMode(rows[i], OUTPUT);
+    digitalWrite(rows[i], LOW);
+
+    bool pressedButtonState = digitalRead(C8);
     if ((millis() - lastMenuDebounce) > menuDebounceDelay) {
-      switch (i) {
-        case 0:
-          if (newDownButtonState && !lastDownButtonState) {
-            handleNavigatorDown();
-          }
-          lastDownButtonState = newDownButtonState;
-          break;
-        case 1:
-          if (newSelectButtonState && !lastSelectButtonState) {
-            handleNavigationSelect();
-          }
-          lastSelectButtonState = newSelectButtonState;
-          break;
-        case 2:
-          if (newCancelButtonState && !lastCancelButtonState) {
-            handleNavigationCancel();
-          }
-          lastCancelButtonState = newCancelButtonState;
-          break;
-        case 3:
-          if (newUpButtonState && !lastUpButtonState) {
-            handleNavigatorUp();
-          }
-          lastUpButtonState = newUpButtonState;
-          break;
-        case 4:
-          // Not navigation technically, but it's simpler to include it
-          // in this loop. We want to call this function both on button
-          // press and release, as opposed to other buttons which
-          // are only actiaved on press.
-          if (newUnderButtonState != lastUnderButtonState) {
-            handleUnderButtonModes();
-          }
-          lastUnderButtonState = newUnderButtonState;
-          break;
-      }
+      handleButton(i, pressedButtonState);
+      lastMenuDebounce = millis();
     }
+    pinMode(rows[i], INPUT);
   }
 }
 
@@ -75,6 +77,7 @@ void handleNavigationSelect() {
 }
 
 void handleNavigationCancel() {
+  Serial.println("Menu cancel?");
   if (currentNumberSelectMenu > 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onCancel();
     return;
@@ -85,6 +88,7 @@ void handleNavigationCancel() {
 }
 
 void handleNavigatorDown() {
+  Serial.println("Menu down?");
   if (currentNumberSelectMenu > 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onPressDown();
     return;
@@ -98,6 +102,7 @@ void handleNavigatorDown() {
 }
 
 void handleNavigatorUp() {
+  Serial.println("Menu up?");
   if (currentNumberSelectMenu > 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onPressUp();
     return;

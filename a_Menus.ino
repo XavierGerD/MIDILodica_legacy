@@ -12,7 +12,7 @@
 #define patchLength 10
 
 byte currentMenu = 0;
-int currentNumberSelectMenu = 0;
+int currentNumberSelectMenu = -1;
 int currentMenuItem = 0;
 
 int getSettingsMenuSelectedValue()
