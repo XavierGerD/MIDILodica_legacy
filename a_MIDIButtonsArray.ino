@@ -1,32 +1,37 @@
-unsigned long debounceDelay = 5;
+unsigned long debounceDelay = 10;
 unsigned long lastDebounce = 0;
-// For simplicity's sake, columns always use the index j and rows the index i.
-// While buttons are assigned row by row, they are played column by column.
-// This is why the orders of the loops here are inverted relative
-// to the assignNotesToButtons function and the two-dimensional array
-// noteButtons.
+
+bool lastButtonState = 0;
+bool pressedNoteButtonState = 1;
 
 void playMIDINotes() {
-  for (byte j = 0; j < columnsLength; j++) {
-    digitalWrite(columns[j], HIGH);
+  for (byte i = 0; i < rowsLength; i++) {
+    pinMode(rows[i], OUTPUT);
+    digitalWrite(rows[i], LOW);
 
-    for (byte i = 0; i < rowsLength; i++) {
-      bool pressedButtonState = digitalRead(rows[i]);
+    for (byte j = 0; j < columnsLength; j++) {
+      digitalWrite(columns[j], HIGH);
+      pressedNoteButtonState = digitalRead(columns[j]);
 
-      if ((millis() - lastDebounce) > debounceDelay) {
-        if (pressedButtonState && !noteButtons[i][j]->lastState) {
-          noteButtons[i][j]->playNote(sensorMode, sensorValue, sensorOctaveShift);
-        }
-
-        if (!pressedButtonState && noteButtons[i][j]->lastState) {
-          noteButtons[i][j]->cancelNote();
-        }
-        
-        lastDebounce = millis();
-        noteButtons[i][j]->lastState = pressedButtonState;
+      // Only detect state changes.
+      if (pressedNoteButtonState == noteButtons[i][j]->lastState || (millis() - lastDebounce) <= debounceDelay) {
+        continue;
       }
-    }
 
-    digitalWrite(columns[j], LOW);
+      if (!pressedNoteButtonState) {
+        noteButtons[i][j]->playNote(sensorMode, sensorValue, sensorOctaveShift);
+      }
+
+      if (pressedNoteButtonState) {
+        noteButtons[i][j]->cancelNote();
+      }
+      noteButtons[i][j]->lastState = pressedNoteButtonState;
+      lastDebounce = millis();
+
+      digitalWrite(columns[j], LOW);
+    }
+    
+    digitalWrite(rows[i], LOW);
+    pinMode(rows[i], INPUT);
   }
 }

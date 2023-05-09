@@ -21,7 +21,7 @@ void cancelAllNotes() {
 
 void handleUnderButtonOctaveShift(byte octaveShiftAmount) {
   changeOctaveShift(octaveShiftAmount);
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
+//  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 }
 
 void handleSustain() {

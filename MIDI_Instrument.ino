@@ -27,21 +27,21 @@
 #define SCREEN_HEIGHT 172
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
-#define C1 7
-#define C2 8
-#define C3 9
+#define C7 7
+#define C6 8
+#define C5 9
 #define C4 10
-#define C5 11
-#define C6 12
-#define C7 13
+#define C3 11
+#define C2 12
+#define C1 13
 // Used for menu controls and underbutton
 #define C8 20
 
-#define R1 17
-#define R2 1
+#define R5 17
+#define R4 1
 #define R3 4
-#define R4 5
-#define R5 6
+#define R2 5
+#define R1 6
 
 #define underButton 20
 
@@ -142,75 +142,47 @@ void setup() {
   Serial.begin(9600);
 
   for (byte i = 0; i < rowsLength; i++) {
-    pinMode(rows[i], OUTPUT);
+    pinMode(rows[i], INPUT);
   }
 
-  for (byte i = 0; i < columnsLength; i++) {
-    pinMode(columns[i], INPUT_PULLUP);
+  for (byte j = 0; j < columnsLength; j++) {
+    pinMode(columns[j], INPUT_PULLUP);
   }
 
   pinMode(C8, INPUT_PULLUP);
+  digitalWrite(C8, HIGH);
 
-  delay(1000);
+//  NoteButton rando = NoteButton(
+
   launchScreen();
-  assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
-  //
-  //  delay(500);
-  //  handleNavigationSelect();
-  //  delay(500);
-  //  handleNavigatorUp();
-  //  delay(500);
-  //  handleNavigationSelect();
-  //
-  //  delay(500);
-  //  handleNavigationSelect();
-  //  delay(500);
-  //  handleNavigatorUp();
-  //  delay(500);
-  //  handleNavigatorUp();
-  //
-  //  delay(500);
-  //  handleNavigationSelect();
-  //  delay(500);
-  //  handleNavigatorUp();
-  //
-  //  delay(500);
-  //  handleNavigationCancel();
-  //  delay(500);
-  //  handleNavigatorDown();
-  //
-  //    delay(500);
-  //  handleNavigationSelect();
-  //    delay(500);
-  //  handleNavigationSelect();
-
+  initializeButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 }
 
 void loop() {
   playMIDINotes();
-  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
+//  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
 
   // Avoid unwanted noise when idle.
-  if (constrainedSensorVal <= 105) {
-    constrainedSensorVal = 100;
-  }
+//  if (constrainedSensorVal <= 105) {
+//    constrainedSensorVal = 100;
+//  }
 
-  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
+//  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
+//
+//  if (sensorValue != nextVal) {
+//    handleSensorModes(sensorValue);
+//    nextVal = sensorValue;
+//  }
+//
+//  stripVal = map(analogRead(stripPin), 1023, 0, 0, 127);
+//
+//  if (stripVal != nextStripVal) {
+//    handleStripVal(stripVal);
+//    nextStripVal = stripVal;
+//  }
 
-  if (sensorValue != nextVal) {
-    handleSensorModes(sensorValue);
-    nextVal = sensorValue;
-  }
-
-  stripVal = map(analogRead(stripPin), 1023, 0, 0, 127);
-
-  if (stripVal != nextStripVal) {
-    handleStripVal(stripVal);
-    nextStripVal = stripVal;
-  }
-
-  handleUnderButtonModes();
-  ManageNavigationButtons();
+//  handleUnderButtonModes();
+//  ManageNavigationButtons();
 }
 
 void handleSensorModes(byte sensorVal) {
@@ -219,7 +191,7 @@ void handleSensorModes(byte sensorVal) {
       velocity = sensorVal;
     case 1:
     default:
-      midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
+      midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, 127};
       MidiUSB.sendMIDI(ccModWheel);
     case 2:
       midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0, 1, sensorVal};

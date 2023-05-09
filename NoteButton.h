@@ -11,29 +11,29 @@ class NoteButton {
     byte note;
     byte lastPlayedNote;
     byte noteVelocity;
-    boolean lastState;
-    boolean newState;
+    boolean lastState = 1;
+    boolean newState = 1;
 
     void playNote(byte sensorMode, byte sensorVal, byte sensorOctaveShift) {
       byte noteVelocity = sensorMode == 0 ? sensorVal : 127;
       byte noteToSend = note;
-      if (sensorMode == 3) {
-        noteToSend = note + 12 * sensorOctaveShift;
-      }
-      if (newState) {
-        if (sensorMode == 3) {
-          lastPlayedNote = noteToSend;
-        }
-        sendNote();
-      } else {
-        if (sensorMode == 3) {
-          lastPlayedNote = 0;
-        }
-        if (lastPlayedNote) {
-          midiEventPacket_t noteOff = {0x08, 0x80, lastPlayedNote, noteVelocity};
-        }
-        cancelNote();
-      }
+//      if (sensorMode == 3) {
+//        noteToSend = note + 12 * sensorOctaveShift;
+//      }
+//      //      if (newState) {
+//      if (sensorMode == 3) {
+//        lastPlayedNote = noteToSend;
+//      }
+      sendNote();
+      //      } else {
+      //        if (sensorMode == 3) {
+      //          lastPlayedNote = 0;
+      //        }
+      //        if (lastPlayedNote) {
+      //          midiEventPacket_t noteOff = {0x08, 0x80, lastPlayedNote, noteVelocity};
+      //        }
+      //        cancelNote();
+      //      }
     }
 
     void sendNote() {
@@ -50,9 +50,9 @@ class NoteButton {
 
     void changeButtonNote(byte note) {
       this -> note = note;
-      
+
       // Used for octave changes mainly. Rearticulates the note if it is changed while playing.
-      if (lastState) {
+      if (!lastState) {
         cancelNote();
         sendNote();
       }
