@@ -1,25 +1,24 @@
 
-boolean lastUpButtonState = HIGH;
-boolean lastDownButtonState = HIGH;
-boolean lastSelectButtonState = HIGH;
-boolean lastCancelButtonState = HIGH;
-boolean lastUnderButtonState = HIGH;
-boolean newUnderButtonState = LOW;
-
-// Since the debounce delay is so short, it should be fine
-// to use a single variable for all debounces.
-const byte menuDebounceDelay = 5;
-unsigned long lastMenuDebounce = 0;
+boolean lastUpButtonState = LOW;
+boolean lastDownButtonState = LOW;
+boolean lastSelectButtonState = LOW;
+boolean lastCancelButtonState = LOW;
+boolean lastUnderButtonState = LOW;
+boolean newUnderButtonState = HIGH;
 
 void handleButton(byte index, bool pressedButtonState) {
-  Serial.println(index);
+
   switch (index) {
-    case 0:
-      if (!pressedButtonState && !lastDownButtonState) {
-        handleNavigatorDown();
-      }
-      lastDownButtonState = pressedButtonState;
-      break;
+    //    case 0:
+    //      // Not navigation technically, but it's simpler to include it
+    //      // in this loop. We want to call this function both on button
+    //      // press and release, as opposed to other buttons which
+    //      // are only actiaved on press.
+    //      if (pressedButtonState != lastUnderButtonState) {
+    //        handleUnderButtonModes();
+    //      }
+    //      lastUnderButtonState = pressedButtonState;
+    //      break;
     case 1:
       if (!pressedButtonState && !lastSelectButtonState) {
         handleNavigationSelect();
@@ -39,29 +38,11 @@ void handleButton(byte index, bool pressedButtonState) {
       lastUpButtonState = pressedButtonState;
       break;
     case 4:
-      // Not navigation technically, but it's simpler to include it
-      // in this loop. We want to call this function both on button
-      // press and release, as opposed to other buttons which
-      // are only actiaved on press.
-      if (!pressedButtonState != lastUnderButtonState) {
-        handleUnderButtonModes();
+      if (!pressedButtonState && !lastDownButtonState) {
+        handleNavigatorDown();
       }
-      lastUnderButtonState = pressedButtonState;
+      lastDownButtonState = pressedButtonState;
       break;
-  }
-}
-
-void ManageNavigationButtons() {
-  for (byte i = 0; i < rowsLength; i++) {
-    pinMode(rows[i], OUTPUT);
-    digitalWrite(rows[i], LOW);
-
-    bool pressedButtonState = digitalRead(C8);
-    if ((millis() - lastMenuDebounce) > menuDebounceDelay) {
-      handleButton(i, pressedButtonState);
-      lastMenuDebounce = millis();
-    }
-    pinMode(rows[i], INPUT);
   }
 }
 
@@ -71,38 +52,38 @@ void handleNavigationSelect() {
     return;
   }
 
-  Menu currentItem = allMenus[currentMenu][currentMenuItem];
-  currentItem.onAction(currentItem.submenuTarget);
+  allMenus[currentMenu][currentMenuItem].onAction(allMenus[currentMenu][currentMenuItem].submenuTarget);
   drawMenu();
 }
 
 void handleNavigationCancel() {
-  Serial.println("Menu cancel?");
-  if (currentNumberSelectMenu > 0) {
+  if (currentNumberSelectMenu >= 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onCancel();
     return;
   }
-
+  
+  if (currentMenu == 0) {
+    return;
+  }
+  
   endMenuInteraction();
   drawMenu();
 }
 
 void handleNavigatorDown() {
-  Serial.println("Menu down?");
   if (currentNumberSelectMenu > 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onPressDown();
     return;
   }
 
   currentMenuItem += 1;
-  if (currentMenuItem == menuLengths[currentMenu] - 1) {
+  if (currentMenuItem == menuLengths[currentMenu]) {
     currentMenuItem = 0;
   }
   drawMenu();
 }
 
 void handleNavigatorUp() {
-  Serial.println("Menu up?");
   if (currentNumberSelectMenu > 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onPressUp();
     return;

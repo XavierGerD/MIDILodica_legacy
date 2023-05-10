@@ -1,3 +1,7 @@
+int previousMenuItem;
+int nextMenuItem;
+int selectedMenu;
+
 void drawMenu() {
   tft.setTextSize(2);
 
@@ -5,16 +9,15 @@ void drawMenu() {
     allNumberSelectMenus[currentNumberSelectMenu].onLoad();
     return;
   }
-  Serial.println("before fill");
 
   tft.fillScreen(backgroundColor);
 
-  int previousMenuItem = currentMenuItem - 1;
+  previousMenuItem = currentMenuItem - 1;
   if (previousMenuItem < 0) {
     previousMenuItem = menuLengths[currentMenu] - 1;
   }
 
-  int nextMenuItem = currentMenuItem + 1;
+  nextMenuItem = currentMenuItem + 1;
   if (nextMenuItem > menuLengths[currentMenu] - 1) {
     nextMenuItem = 0;
   }
@@ -26,7 +29,7 @@ void drawMenu() {
   drawTextWithShadow(allMenus[currentMenu][currentMenuItem].menuName, 15, 93);
   drawTextWithShadow(allMenus[currentMenu][nextMenuItem].menuName, 15, 153);
 
-  int selectedMenu = allMenus[currentMenu]->getSelectedMenu();
+  selectedMenu = allMenus[currentMenu]->getSelectedMenu();
 
   if (selectedMenu == -1) {
     return;

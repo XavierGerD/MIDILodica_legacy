@@ -1,7 +1,7 @@
 #include <EEPROM.h>
 
 #define menusLength 10
-#define settingsLength 9
+#define settingsLength 10
 #define sensorLength 5
 #define stripLength 5
 #define scaleLength 14
@@ -22,11 +22,12 @@ int getSettingsMenuSelectedValue()
 
 Menu settingsMenuItems[settingsLength] = {
   Menu("Sensor Mode", 1, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Scale", 2, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Tonic", 3, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Octave", 4, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Sensitivity", 5, navigateToSubmenu, getSettingsMenuSelectedValue),
-  Menu("Under button", 6, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Strip Mode", 2, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Scale", 3, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Tonic", 4, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Octave", 5, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Sensitivity", 6, navigateToSubmenu, getSettingsMenuSelectedValue),
+  Menu("Under button", 7, navigateToSubmenu, getSettingsMenuSelectedValue),
 
   // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
   Menu("MIDI Channel", 1, navigateToNumberSelectSubmenu, getSettingsMenuSelectedValue),
@@ -243,8 +244,7 @@ Menu savePatchMenuItems[patchLength] = {
   Menu("10", 9, savePatch, getPatch),
 };
 
-void loadPatch(byte startingLocation)
-{
+void loadPatch(byte startingLocation) {
   byte startingAddress = startingLocation * settingsLength;
   for (byte i = 0; i < settingsLength; i++)
   {
@@ -304,42 +304,36 @@ Menu *allMenus[menusLength] = {
   loadPatchMenuItems
 };
 
-void onUpdateMIDIChannel(int newMidiChannel)
-{
+void onUpdateMIDIChannel(int newMidiChannel) {
   currentChannel = newMidiChannel;
 }
 
-int getMidiChannel()
-{
+int getMidiChannel() {
   return currentChannel;
 }
 
-void onUpdateSensorMIDICC(int newMIDICC)
-{
+void onUpdateSensorMIDICC(int newMIDICC) {
   sensorMode = 4;
   sensorMIDICC = newMIDICC;
 }
 
-int getSensorMIDICC()
-{
+int getSensorMIDICC() {
   return sensorMIDICC;
 }
 
-void onUpdateStripMIDICC(int newMIDICC)
-{
+void onUpdateStripMIDICC(int newMIDICC) {
   stripSensorMode = 4;
   stripMIDICC = newMIDICC;
 }
 
-int getStripMIDICC()
-{
+int getStripMIDICC() {
   return stripMIDICC;
 }
 
 
-NumberSelectMenu MIDIChannel = NumberSelectMenu("MIDI Channel", getMidiChannel, false, onUpdateMIDIChannel, updateNumberSelectMenuScreen);
-NumberSelectMenu SensorMIDICC = NumberSelectMenu("MIDI CC", getSensorMIDICC, true, onUpdateSensorMIDICC, updateNumberSelectMenuScreen);
-NumberSelectMenu StripMIDICC = NumberSelectMenu("MIDI CC", getStripMIDICC, true, onUpdateStripMIDICC, updateNumberSelectMenuScreen);
+NumberSelectMenu MIDIChannel = NumberSelectMenu("MIDI Channel", 12, getMidiChannel, false, onUpdateMIDIChannel, updateNumberSelectMenuScreen);
+NumberSelectMenu SensorMIDICC = NumberSelectMenu("MIDI CC", 7, getSensorMIDICC, true, onUpdateSensorMIDICC, updateNumberSelectMenuScreen);
+NumberSelectMenu StripMIDICC = NumberSelectMenu("MIDI CC", 7, getStripMIDICC, true, onUpdateStripMIDICC, updateNumberSelectMenuScreen);
 
 NumberSelectMenu allNumberSelectMenus[] = {
   MIDIChannel,
@@ -381,4 +375,5 @@ void endNumberSelectMenuInteraction()
 {
   currentNumberSelectMenu = -1;
   navigateToSubmenu(0);
+  drawMenu();
 }

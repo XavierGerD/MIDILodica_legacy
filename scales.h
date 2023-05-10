@@ -1,4 +1,3 @@
-
 const byte chromatic[] = {1};
 const byte ionian[] = {2, 2, 1, 2, 2, 2, 1};
 const byte dorian[] = {2, 1, 2, 2, 2, 1, 2};

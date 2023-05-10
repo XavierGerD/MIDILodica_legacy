@@ -1,3 +1,4 @@
+
 #include <frequencyToNote.h>
 #include <MIDIUSB.h>
 #include <MIDIUSB_Defs.h>
@@ -24,6 +25,7 @@
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 172
+
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
 #define C7 7
@@ -45,7 +47,7 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 #define underButton 20
 
 #define rowsLength 5
-#define columnsLength 7
+#define columnsLength 8
 
 #define backgroundColor 0x5151
 #define textColor 0xAE7F
@@ -53,7 +55,7 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 #define selectedColor 0x3C7A
 
 byte rows[rowsLength] = { R1, R2, R3, R4, R5 };
-byte columns[columnsLength] = { C1, C2, C3, C4, C5, C6, C7 };
+byte columns[columnsLength] = { C1, C2, C3, C4, C5, C6, C7, C8 };
 
 byte startingNote = 60;
 
@@ -81,7 +83,7 @@ byte underButtonMode = 0;
 // 2 = Pitch Bend
 // 3 = Octave Shift
 // 4 = Custom CC
-byte stripSensorMode = 2;
+byte stripSensorMode = 0;
 
 byte currentScale = 0;
 byte currentStartingNote = 0;
@@ -138,8 +140,7 @@ void launchScreen() {
 }
 
 void setup() {
-  Serial.begin(9600);
-
+  digitalWrite(17, HIGH);
   for (byte i = 0; i < rowsLength; i++) {
     pinMode(rows[i], INPUT);
   }
@@ -152,13 +153,17 @@ void setup() {
   pinMode(C8, INPUT_PULLUP);
   digitalWrite(C8, HIGH);
 
+  Serial.begin(9600);
+
   launchScreen();
   initializeButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 }
 
+byte constrainedSensorVal;
+
 void loop() {
   playMIDINotes();
-  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
+  constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
 
   // Avoid unwanted noise when idle.
   if (constrainedSensorVal <= 105) {
@@ -178,8 +183,6 @@ void loop() {
     handleStripVal(stripVal);
     nextStripVal = stripVal;
   }
-
-  ManageNavigationButtons();
 }
 
 void handleSensorModes(byte sensorVal) {
@@ -253,8 +256,8 @@ void handleSensorOctaveShift(byte sensorVal) {
   }
 }
 
+byte offset = 2;
 void drawTextWithShadow(char* text, byte x, byte y) {
-  byte offset = 2;
   tft.setTextColor(0x545d);
   tft.setCursor(x - offset, y + offset);
   tft.print(text);
@@ -264,31 +267,29 @@ void drawTextWithShadow(char* text, byte x, byte y) {
   tft.print(text);
 }
 
-void updateNumberSelectMenuScreen(String menuName, String value, byte selectedIndex, bool isMaximumThreeDigits) {
+byte underscorePositionOffset;
+byte textX;
+byte indexOffset;
+byte menuNameX;
+
+void updateNumberSelectMenuScreen(char* menuName, byte menuNameLength, char value[4], byte selectedIndex, bool isMaximumThreeDigits) {
   tft.fillScreen(backgroundColor);
   tft.setTextSize(2);
-
-  int menuNameLength = menuName.length() + 1;
-  char menuNameCharArray[menuNameLength];
-  menuName.toCharArray(menuNameCharArray, menuNameLength);
-
-  int valueLength = value.length() + 1;
-  char valueArray[valueLength];
-  value.toCharArray(valueArray, valueLength);
-
-  byte menuNameX = (tft.width() / 2) - (22 * menuName.length() / 2);
-  drawTextWithShadow(menuNameCharArray, menuNameX, 50);
+  Serial.println(menuName);
+  Serial.println(menuNameLength);
+  menuNameX = (tft.width() / 2) - (22 * menuNameLength / 2);
+  drawTextWithShadow(menuName, menuNameX, 50);
 
   tft.setTextSize(4);
 
-  byte indexOffset = 1;
+  indexOffset = 1;
   if (isMaximumThreeDigits) {
     indexOffset = 2;
   }
 
-  byte textX = (tft.width() / 2) - (44 * value.length() / 2);
-  drawTextWithShadow(valueArray, textX, 120);
+  textX = (tft.width() / 2) - (44 * 3 / 2);
+  drawTextWithShadow(value, textX, 120);
 
-  byte underscorePositionOffset = (44 * (indexOffset - selectedIndex));
+  underscorePositionOffset = (44 * (indexOffset - selectedIndex));
   drawTextWithShadow("_", textX + underscorePositionOffset, 120);
 }
