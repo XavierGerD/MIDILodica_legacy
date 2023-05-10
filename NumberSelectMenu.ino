@@ -8,8 +8,12 @@ class NumberSelectMenu {
     // Current digit being edited.
     int selectedDigit = 0;
 
-    // Value to show to the user.
+    // The selected value, with each digit stored separately.
     int values[3];
+
+    // Value to show to the user.
+    char valuesToShow[4];
+
 
     // Only two digits if false.
     bool isMaximumThreeDigits;
@@ -24,6 +28,12 @@ class NumberSelectMenu {
       this -> updateScreen = updateScreen;
       this -> onMenuConfirm = onMenuConfirm;
       this -> getInitialValue = getInitialValue;
+    }
+
+    void updateValuesToShow() {
+      valuesToShow[0] = values[2];
+      valuesToShow[1] = values[1];
+      valuesToShow[2] = values[0];
     }
 
     void onLoad() {
@@ -49,7 +59,7 @@ class NumberSelectMenu {
         selectedDigit = 2;
       }
 
-      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateValuesToShow();
       updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
@@ -72,14 +82,14 @@ class NumberSelectMenu {
 
     void onPressDown() {
       handlePressDown(selectedDigit);
-      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateValuesToShow();
       updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
 
     void onPressUp() {
       handlePressUp(selectedDigit);
-      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateValuesToShow();
       updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
@@ -91,8 +101,8 @@ class NumberSelectMenu {
         endNumberSelectMenuInteraction();
         return;
       }
-      
-      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+
+      updateValuesToShow();
       updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
@@ -107,7 +117,7 @@ class NumberSelectMenu {
         endNumberSelectMenuInteraction();
         return;
       }
-      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateValuesToShow();
       updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 };

@@ -47,7 +47,7 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 #define underButton 20
 
 #define rowsLength 5
-#define columnsLength 8
+#define columnsLength 7
 
 #define backgroundColor 0x5151
 #define textColor 0xAE7F
@@ -55,7 +55,7 @@ Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 #define selectedColor 0x3C7A
 
 byte rows[rowsLength] = { R1, R2, R3, R4, R5 };
-byte columns[columnsLength] = { C1, C2, C3, C4, C5, C6, C7, C8 };
+byte columns[columnsLength] = { C1, C2, C3, C4, C5, C6, C7 };
 
 byte startingNote = 60;
 
@@ -287,7 +287,6 @@ void updateNumberSelectMenuScreen(char* menuName, byte menuNameLength, char valu
   }
 
   if (isMaximumThreeDigits) {
-    Serial.println(value);
     textX = (tft.width() / 2) - (44 * 3 / 2);
     drawTextWithShadow(value, textX, 120);
   } else {

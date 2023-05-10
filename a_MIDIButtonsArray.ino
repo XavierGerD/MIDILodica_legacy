@@ -17,21 +17,29 @@ void playMIDINotes() {
         continue;
       }
 
-      if (!pressedButtonState) {
-        if (j == 7) {
-          handleButton(i, pressedButtonState);
-        } else {
-          noteButtons[i][j]->playNote(sensorMode, sensorValue, sensorOctaveShift);
-        }
 
+      if (!pressedButtonState) {
+        noteButtons[i][j]->playNote(sensorMode, sensorValue, sensorOctaveShift);
       }
 
       if (pressedButtonState) {
         noteButtons[i][j]->cancelNote();
       }
+
+
       noteButtons[i][j]->lastState = pressedButtonState;
       lastDebounce = millis();
     }
+
+    if ((millis() - lastDebounce) > debounceDelay) {
+      pressedButtonState = digitalRead(C8);
+      if (!pressedButtonState) {
+        handleButton(i, pressedButtonState);
+        lastDebounce = millis();
+      }
+
+    }
+
     pinMode(rows[i], INPUT);
   }
   SPI.begin();
