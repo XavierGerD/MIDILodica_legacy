@@ -275,8 +275,7 @@ byte menuNameX;
 void updateNumberSelectMenuScreen(char* menuName, byte menuNameLength, char value[4], byte selectedIndex, bool isMaximumThreeDigits) {
   tft.fillScreen(backgroundColor);
   tft.setTextSize(2);
-  Serial.println(menuName);
-  Serial.println(menuNameLength);
+
   menuNameX = (tft.width() / 2) - (22 * menuNameLength / 2);
   drawTextWithShadow(menuName, menuNameX, 50);
 
@@ -287,8 +286,16 @@ void updateNumberSelectMenuScreen(char* menuName, byte menuNameLength, char valu
     indexOffset = 2;
   }
 
-  textX = (tft.width() / 2) - (44 * 3 / 2);
-  drawTextWithShadow(value, textX, 120);
+  if (isMaximumThreeDigits) {
+    Serial.println(value);
+    textX = (tft.width() / 2) - (44 * 3 / 2);
+    drawTextWithShadow(value, textX, 120);
+  } else {
+    textX = (tft.width() / 2) - (44 * 2 / 2);
+    ////    char shortenedValue[] = {value[2], value[1]};
+    drawTextWithShadow(value, textX, 120);
+  }
+
 
   underscorePositionOffset = (44 * (indexOffset - selectedIndex));
   drawTextWithShadow("_", textX + underscorePositionOffset, 120);

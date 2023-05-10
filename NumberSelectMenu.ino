@@ -5,18 +5,11 @@ class NumberSelectMenu {
 
     int (*getInitialValue)();
 
-    // Individual digits.
-    // Bit of a misnomer, the first digit is the
-    // rightmost digit.
-    char firstDigit;
-    char secondDigit;
-    char thirdDigit;
-
     // Current digit being edited.
     int selectedDigit = 0;
 
     // Value to show to the user.
-    char valueToShow[4];
+    int values[3];
 
     // Only two digits if false.
     bool isMaximumThreeDigits;
@@ -31,13 +24,6 @@ class NumberSelectMenu {
       this -> updateScreen = updateScreen;
       this -> onMenuConfirm = onMenuConfirm;
       this -> getInitialValue = getInitialValue;
-      this -> valueToShow[4] = "\0";
-    }
-
-    void updateValueToShow() {
-      valueToShow[0] = thirdDigit;
-      valueToShow[1] = secondDigit;
-      valueToShow[2] = firstDigit;
     }
 
     void onLoad() {
@@ -53,11 +39,9 @@ class NumberSelectMenu {
         valueAsString = "0" + valueAsString;
       }
 
-      firstDigit = valueAsString.charAt(2);
-      secondDigit = valueAsString.charAt(1);
-      thirdDigit = valueAsString.charAt(0);
-
-      updateValueToShow();
+      values[2] = valueAsString.charAt(2);
+      values[1] = valueAsString.charAt(1);
+      values[0] = valueAsString.charAt(0);
 
       selectedDigit = 1;
 
@@ -65,73 +49,51 @@ class NumberSelectMenu {
         selectedDigit = 2;
       }
 
-      Serial.println("Name length");
-      Serial.println(menuName);
-      updateScreen(menuName, menuNameLength, valueToShow, selectedDigit, isMaximumThreeDigits);
+      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
     char handlePressDown (char digit) {
-      char newDigit = digit + 1;
-      if (newDigit < 0) {
-        newDigit = 9;
+      int newDigit = values[selectedDigit] - 1;
+      if (newDigit < 48) {
+        newDigit = 57;
       }
-      return newDigit;
+      values[selectedDigit] = newDigit;
     }
 
 
-    char handlePressUp (char digit) {
-      char newDigit = digit + 1;
-      if (newDigit > 9) {
-        newDigit = 0;
+    char handlePressUp (int selectedDigit) {
+      int newDigit = values[selectedDigit] + 1;
+      if (newDigit > 57) {
+        newDigit = 48;
       }
-      return newDigit;
+      values[selectedDigit] = newDigit;
     }
 
     void onPressDown() {
-      switch (selectedDigit) {
-        case 0:
-          firstDigit = handlePressDown(firstDigit);
-          break;
-        case 1:
-          secondDigit = handlePressDown(secondDigit);
-          break;
-        case 2:
-          thirdDigit =  handlePressDown(thirdDigit);
-          break;
-      }
-      updateValueToShow();
-
-      updateScreen(menuName, menuNameLength, valueToShow, selectedDigit, isMaximumThreeDigits);
+      handlePressDown(selectedDigit);
+      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
 
     void onPressUp() {
-      switch (selectedDigit) {
-        case 0:
-          firstDigit = handlePressUp(firstDigit);
-          break;
-        case 1:
-          secondDigit = handlePressUp(secondDigit);
-          break;
-        case 2:
-          thirdDigit =  handlePressUp(thirdDigit);
-          break;
-      }
-      updateValueToShow();
-
-      updateScreen(menuName, menuNameLength, valueToShow, selectedDigit, isMaximumThreeDigits);
+      handlePressUp(selectedDigit);
+      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
     void onConfirm() {
       selectedDigit--;
-      if (selectedDigit <= 0) {
-        String newValueString = String(thirdDigit) + String(secondDigit) + String(firstDigit);
+      if (selectedDigit < 0) {
+        String newValueString = String(values[0] - 48) + String(values[1] - 48) + String(values[2] - 48);
         onMenuConfirm(newValueString.toInt());
         endNumberSelectMenuInteraction();
         return;
       }
-
-      updateScreen(menuName, menuNameLength, valueToShow, selectedDigit, isMaximumThreeDigits);
+      
+      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 
     void onCancel() {
@@ -145,7 +107,7 @@ class NumberSelectMenu {
         endNumberSelectMenuInteraction();
         return;
       }
-
-      updateScreen(menuName, menuNameLength, valueToShow, selectedDigit, isMaximumThreeDigits);
+      char valuesToShow[4] = { values[2],  values[1],  values[0], "\0" };
+      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
     }
 };
