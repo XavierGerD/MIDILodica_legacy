@@ -290,7 +290,6 @@ Menu *allMenus[menusLength] = {
 void onUpdateMIDIChannel(int newMIDIChannel) {
   // -1 because channels start a index 0 but are
   // presented at 1 top 16.
-  Serial.println(newMIDIChannel);
   currentChannel = newMIDIChannel - 1;
   assignNotesToButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 }

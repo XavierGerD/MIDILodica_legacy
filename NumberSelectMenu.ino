@@ -1,4 +1,8 @@
+const byte ASCII_OFFSET = 48;
+const byte DIGITS_LENGTH = 3;
+
 class NumberSelectMenu {
+   
   public:
     byte menuNameLength;
     char* menuName;
@@ -9,115 +13,102 @@ class NumberSelectMenu {
     int selectedDigit = 0;
 
     // The selected value, with each digit stored separately.
-    int values[3];
+    int digits[DIGITS_LENGTH];
 
     // Value to show to the user.
-    char valuesToShow[4];
-
+    // Length of +1 to account for null terminator.
+    char digitsToShow[DIGITS_LENGTH + 1];
 
     // Only two digits if false.
-    bool isMaximumThreeDigits;
+    bool isThreeDigits;
 
     void (*updateScreen)(char* menuName, byte menuNameLength, char* value, byte selectedIndex, bool isMaximumThreeDigit);
     void (*onMenuConfirm)(byte newValue);
 
-    NumberSelectMenu(char* menuName, byte menuNameLength, int (*getInitialValue)(), byte isMaximumThreeDigits, void (*onMenuConfirm)(int newValue), void (*updateScreen)(char* menuName, byte menuNameLength, char* value, byte selectedIndex, bool isMaximumThreeDigit)) {
+    NumberSelectMenu(char* menuName, byte menuNameLength, int (*getInitialValue)(), byte isThreeDigits, void (*onMenuConfirm)(int newValue), void (*updateScreen)(char* menuName, byte menuNameLength, char* value, byte selectedIndex, bool isMaximumThreeDigit)) {
       this -> menuName = menuName;
       this -> menuNameLength = menuNameLength;
-      this -> isMaximumThreeDigits = isMaximumThreeDigits;
+      this -> isThreeDigits = isThreeDigits;
       this -> updateScreen = updateScreen;
       this -> onMenuConfirm = onMenuConfirm;
       this -> getInitialValue = getInitialValue;
     }
 
-    void updateValuesToShow() {
-      valuesToShow[0] = values[2];
-      valuesToShow[1] = values[1];
-      valuesToShow[2] = values[0];
+    void updatedigitsToShow() {
+      digitsToShow[0] = digits[2];
+      digitsToShow[1] = digits[1];
+      digitsToShow[2] = digits[0];
+    }
+
+    void extractDigitsFromInitialValue() {
+      int initialValue = getInitialValue();
+
+      for (byte i = 0; i < DIGITS_LENGTH; i++) {
+        byte digitSelector = 1;
+        if (i > 0) {
+          digitSelector = i * 10;
+        }
+        digits[i] = ((initialValue / digitSelector) % 10) + ASCII_OFFSET;
+      }
     }
 
     void onLoad() {
-      int initialValue = getInitialValue();
-      char initVal[3];
-      String valueAsString = itoa(initialValue, initVal, 10);
-      Serial.println(valueAsString);
-      // Easier to always work with a string of length 3
-      if (valueAsString.length() < 2) {
-        valueAsString = "0" + valueAsString;
-      }
-
-      if (valueAsString.length() < 3) {
-        valueAsString = "0" + valueAsString;
-      }
-      Serial.println(valueAsString);
-      values[2] = valueAsString.charAt(0);
-      values[1] = valueAsString.charAt(1);
-      values[0] = valueAsString.charAt(2);
-
-      selectedDigit = 1;
-
-      if (isMaximumThreeDigits) {
-        selectedDigit = 2;
-      }
-
-      updateValuesToShow();
-      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
+      extractDigitsFromInitialValue();
+      selectedDigit = isThreeDigits ? 2 : 1;
+      updatedigitsToShow();
+      updateScreen(menuName, menuNameLength, digitsToShow, selectedDigit, isThreeDigits);
     }
 
     char handlePressDown (char digit) {
-      int newDigit = values[selectedDigit] - 1;
-      if (newDigit < 48) {
-        newDigit = 57;
+      int newDigit = digits[selectedDigit] - 1;
+      if (newDigit < ASCII_OFFSET) {
+        newDigit = 9 + ASCII_OFFSET;
       }
-      values[selectedDigit] = newDigit;
+      digits[selectedDigit] = newDigit;
     }
 
 
     char handlePressUp (int selectedDigit) {
-      int newDigit = values[selectedDigit] + 1;
-      if (newDigit > 57) {
-        newDigit = 48;
+      int newDigit = digits[selectedDigit] + 1;
+      if (newDigit > 9 + ASCII_OFFSET) {
+        newDigit = ASCII_OFFSET;
       }
-      values[selectedDigit] = newDigit;
+      digits[selectedDigit] = newDigit;
     }
 
     void onPressDown() {
       handlePressDown(selectedDigit);
-      updateValuesToShow();
-      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
+      updatedigitsToShow();
+      updateScreen(menuName, menuNameLength, digitsToShow, selectedDigit, isThreeDigits);
     }
 
 
     void onPressUp() {
       handlePressUp(selectedDigit);
-      updateValuesToShow();
-      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
+      updatedigitsToShow();
+      updateScreen(menuName, menuNameLength, digitsToShow, selectedDigit, isThreeDigits);
     }
 
     void onConfirm() {
       selectedDigit--;
       if (selectedDigit < 0) {
-        String newValueString = String(values[1] - 48) + String(values[0] - 48);
-        if (isMaximumThreeDigits) {
-          newValueString = String(values[2] - 48) + newValueString;
+        int newValueInt = digits[0] - ASCII_OFFSET + ((digits[1] - ASCII_OFFSET) * 10);
+        if (isThreeDigits) {
+          newValueInt = newValueInt + ((digits[2] - ASCII_OFFSET) * 100);
         }
-        Serial.println(values[0]);
-        Serial.println(values[1]);
-        Serial.println(values[2]);
-        Serial.println(newValueString);
-        onMenuConfirm(newValueString.toInt());
+        onMenuConfirm(newValueInt);
         endNumberSelectMenuInteraction();
         return;
       }
 
-      updateValuesToShow();
-      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
+      updatedigitsToShow();
+      updateScreen(menuName, menuNameLength, digitsToShow, selectedDigit, isThreeDigits);
     }
 
     void onCancel() {
       selectedDigit++;
       byte maxIndex = 1;
-      if (isMaximumThreeDigits) {
+      if (isThreeDigits) {
         maxIndex = 2;
       }
 
@@ -125,7 +116,7 @@ class NumberSelectMenu {
         endNumberSelectMenuInteraction();
         return;
       }
-      updateValuesToShow();
-      updateScreen(menuName, menuNameLength, valuesToShow, selectedDigit, isMaximumThreeDigits);
+      updatedigitsToShow();
+      updateScreen(menuName, menuNameLength, digitsToShow, selectedDigit, isThreeDigits);
     }
 };
