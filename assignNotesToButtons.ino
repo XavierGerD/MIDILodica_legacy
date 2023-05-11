@@ -1,9 +1,7 @@
-byte scaleCounter;
-byte currentNote;
 
 void assignNotesToButtons(byte startingNote, byte startingOctave, byte scale[], byte lengthOfScale) {
-  scaleCounter = 0;
-  currentNote = findStartingPoint(startingNote, startingOctave);
+  byte scaleCounter = 0;
+  byte currentNote = findStartingPoint(startingNote, startingOctave);
 
   for (byte i = 0; i < rowsLength; i++) {
     for (byte j = 0; j < columnsLength; j++) {
@@ -19,8 +17,8 @@ void assignNotesToButtons(byte startingNote, byte startingOctave, byte scale[], 
 }
 
 void initializeButtons(byte startingNote, byte startingOctave, byte scale[], byte lengthOfScale) {
-  scaleCounter = 0;
-  currentNote = findStartingPoint(startingNote, startingOctave);
+  byte scaleCounter = 0;
+  byte currentNote = findStartingPoint(startingNote, startingOctave);
 
   for (byte i = 0; i < rowsLength; i++) {
     for (byte j = 0; j < columnsLength; j++) {

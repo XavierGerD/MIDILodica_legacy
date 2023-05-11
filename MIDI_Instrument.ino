@@ -101,13 +101,13 @@ byte sensorOctaveShift = 0;
 byte sensorSensitivities[4] = {200, 175, 150, 125};
 byte minimumSensitivity = 100;
 
-uint8_t sensorValue;
-uint8_t nextVal;
+byte sensorValue;
+byte nextVal;
 
-uint8_t stripVal;
-uint8_t nextStripVal;
+byte stripVal;
+byte nextStripVal;
 
-uint8_t velocity = 127;
+byte velocity = 127;
 
 byte increment = 4;
 uint16_t colors[] = { textColor, 0x545d, textShadowColor };
@@ -159,11 +159,9 @@ void setup() {
   initializeButtons(currentStartingNote, currentStartingOctave, scales[currentScale], scaleLengths[currentScale]);
 }
 
-byte constrainedSensorVal;
-
 void loop() {
   playMIDINotes();
-  constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
+  byte constrainedSensorVal = constrain(analogRead(sensorPin), minimumSensitivity, sensorSensitivities[currentSensitivity]);
 
   // Avoid unwanted noise when idle.
   if (constrainedSensorVal <= 105) {
@@ -177,7 +175,12 @@ void loop() {
     nextVal = sensorValue;
   }
 
-  stripVal = map(analogRead(stripPin), 0, 1023, 0, 127);
+  stripVal = map(analogRead(stripPin), 0, 1000, 0, 127);
+
+  if (stripVal <= 13) {
+    stripVal = 0;
+  }
+
 
   if (stripVal != nextStripVal) {
     handleStripVal(stripVal);
@@ -186,12 +189,11 @@ void loop() {
 }
 
 void handleSensorModes(byte sensorVal) {
-  switch (sensorMode) {
+  switch ((byte) sensorMode) {
     case 0:
       velocity = sensorVal;
       break;
     case 1:
-    default:
       midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
       MidiUSB.sendMIDI(ccModWheel);
       break;
@@ -205,18 +207,20 @@ void handleSensorModes(byte sensorVal) {
     case 4:
       midiEventPacket_t ccMessage = {0x0B, 0xB0, sensorMIDICC, sensorVal};
       MidiUSB.sendMIDI(ccMessage);
+      break;
+    default:
+      break;
   }
 
   MidiUSB.flush();
 }
 
 void handleStripVal(byte stripVal) {
-  switch (stripSensorMode) {
+  switch ((byte) stripSensorMode) {
     case 0:
       velocity = stripVal;
       break;
     case 1:
-    default:
       midiEventPacket_t ccChange = {0x0B, 0xB0, 1, stripVal};
       MidiUSB.sendMIDI(ccChange);
       break;
@@ -230,6 +234,9 @@ void handleStripVal(byte stripVal) {
     case 4:
       midiEventPacket_t ccMessage = {0x0B, 0xB0, stripMIDICC, stripVal};
       MidiUSB.sendMIDI(ccMessage);
+      break;
+    default:
+      break;
   }
 
   MidiUSB.flush();

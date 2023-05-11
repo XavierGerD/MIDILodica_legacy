@@ -95,8 +95,8 @@ Menu scaleMenuItems[scaleLength] = {
   Menu("Penta. Maj.", 9, changeScale, getSelectedScale),
   Menu("Penta. Min.", 10, changeScale, getSelectedScale),
   Menu("Whole Tone", 11, changeScale, getSelectedScale),
-  Menu("Octatonic 2, 1", 12, changeScale, getSelectedScale),
-  Menu("Octatonic 1, 2", 13, changeScale, getSelectedScale),
+  Menu("Octa. 2, 1", 12, changeScale, getSelectedScale),
+  Menu("Octa. 1, 2", 13, changeScale, getSelectedScale),
 };
 
 int getStartingNote() {

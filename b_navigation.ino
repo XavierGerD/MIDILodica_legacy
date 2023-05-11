@@ -1,4 +1,3 @@
-
 void handleNavButtons(byte index, bool pressedButtonState) {
   switch (index) {
     case 0:

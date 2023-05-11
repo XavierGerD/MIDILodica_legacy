@@ -1,7 +1,3 @@
-int previousMenuItem;
-int nextMenuItem;
-int selectedMenu;
-
 void drawMenu() {
   tft.setTextSize(2);
 
@@ -12,12 +8,12 @@ void drawMenu() {
 
   tft.fillScreen(backgroundColor);
 
-  previousMenuItem = currentMenuItem - 1;
+  int previousMenuItem = currentMenuItem - 1;
   if (previousMenuItem < 0) {
     previousMenuItem = menuLengths[currentMenu] - 1;
   }
 
-  nextMenuItem = currentMenuItem + 1;
+  int nextMenuItem = currentMenuItem + 1;
   if (nextMenuItem > menuLengths[currentMenu] - 1) {
     nextMenuItem = 0;
   }
@@ -29,21 +25,21 @@ void drawMenu() {
   drawTextWithShadow(allMenus[currentMenu][currentMenuItem].menuName, 15, 93);
   drawTextWithShadow(allMenus[currentMenu][nextMenuItem].menuName, 15, 153);
 
-  selectedMenu = allMenus[currentMenu]->getSelectedMenu();
+  int selectedMenu = allMenus[currentMenu]->getSelectedMenu();
 
   if (selectedMenu == -1) {
     return;
   }
 
   if (previousMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 25, 10, selectedColor);
+    tft.drawCircle(tft.width() - 30, 25, 10, selectedColor);
   }
 
   if (currentMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 85, 10, 0x1ad2);
+    tft.drawCircle(tft.width() - 30, 85, 10, 0x1ad2);
   }
 
   if (nextMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 145, 10, selectedColor);
+    tft.drawCircle(tft.width() - 30, 145, 10, selectedColor);
   }
 }
