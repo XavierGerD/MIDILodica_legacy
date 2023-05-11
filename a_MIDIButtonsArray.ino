@@ -19,7 +19,7 @@ void playMIDINotes() {
 
 
       if (!pressedButtonState) {
-        noteButtons[i][j]->playNote(sensorMode, sensorValue, sensorOctaveShift);
+        noteButtons[i][j]->sendNote();
       }
 
       if (pressedButtonState) {

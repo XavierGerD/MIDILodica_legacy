@@ -68,7 +68,8 @@ NoteButton *noteButtons[rowsLength][columnsLength];
 // 1 = Mod Wheel
 // 2 = Pitch Bend
 // 3 = Octave Shift
-// 4 = Custom CC
+// 4 = Off
+// 5 = Custom CC
 byte sensorMode = 1;
 
 // Under Button Modes:
@@ -81,9 +82,9 @@ byte underButtonMode = 0;
 // 0 = Velocity
 // 1 = Mod Wheel
 // 2 = Pitch Bend
-// 3 = Octave Shift
+// 3 = Off
 // 4 = Custom CC
-byte stripSensorMode = 0;
+byte stripSensorMode = 2;
 
 byte currentScale = 0;
 byte currentStartingNote = 0;
@@ -96,18 +97,12 @@ int stripMIDICC = 0;
 
 byte settingsLength = 7;
 
-byte sensorOctaveShift = 0;
-
 byte sensorSensitivities[4] = {200, 175, 150, 125};
 byte minimumSensitivity = 100;
 
-byte sensorValue;
 byte nextVal;
 
-byte stripVal;
 byte nextStripVal;
-
-byte velocity = 127;
 
 byte increment = 4;
 uint16_t colors[] = { textColor, 0x545d, textShadowColor };
@@ -168,20 +163,14 @@ void loop() {
     constrainedSensorVal = 100;
   }
 
-  sensorValue = map(constrainedSensorVal, minimumSensitivity,  sensorSensitivities[currentSensitivity], 0, 127);
+ byte  sensorValue = map(constrainedSensorVal, minimumSensitivity, sensorSensitivities[currentSensitivity], 0, 127);
 
   if (sensorValue != nextVal) {
     handleSensorModes(sensorValue);
     nextVal = sensorValue;
   }
 
-  stripVal = map(analogRead(stripPin), 0, 1000, 0, 127);
-
-  if (stripVal <= 13) {
-    stripVal = 0;
-  }
-
-
+  byte stripVal = map(analogRead(stripPin), 0, 1000, 0, 127);
   if (stripVal != nextStripVal) {
     handleStripVal(stripVal);
     nextStripVal = stripVal;
@@ -189,78 +178,61 @@ void loop() {
 }
 
 void handleSensorModes(byte sensorVal) {
-  switch ((byte) sensorMode) {
-    case 0:
-      velocity = sensorVal;
-      break;
-    case 1:
-      midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
-      MidiUSB.sendMIDI(ccModWheel);
-      break;
-    case 2:
-      midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0, 1, sensorVal};
-      MidiUSB.sendMIDI(sensorPitchBendChange);
-      break;
-    case 3:
-      handleSensorOctaveShift(sensorVal);
-      break;
-    case 4:
-      midiEventPacket_t ccMessage = {0x0B, 0xB0, sensorMIDICC, sensorVal};
-      MidiUSB.sendMIDI(ccMessage);
-      break;
-    default:
-      break;
+  // YES I KNOW but the switch here isn't working properly
+  // for reasons I don't understand. So this will have to do.
+  if (sensorMode == 0) {
+    velocity = sensorVal;
+  } else if (sensorMode == 1) {
+    midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
+    MidiUSB.sendMIDI(ccModWheel);
+  } else if (sensorMode == 2) {
+    midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0, 1, sensorVal};
+    MidiUSB.sendMIDI(sensorPitchBendChange);
+  } else if (sensorMode == 3) {
+    handleSensorOctaveShift(sensorVal);
+  } else if (sensorMode == 4) {
+    return;
+  } else if (sensorMode == 5) {
+    midiEventPacket_t ccMessage = {0x0B, 0xB0, sensorMIDICC, sensorVal};
+    MidiUSB.sendMIDI(ccMessage);
   }
 
   MidiUSB.flush();
 }
 
 void handleStripVal(byte stripVal) {
-  switch ((byte) stripSensorMode) {
-    case 0:
-      velocity = stripVal;
-      break;
-    case 1:
-      midiEventPacket_t ccChange = {0x0B, 0xB0, 1, stripVal};
-      MidiUSB.sendMIDI(ccChange);
-      break;
-    case 2:
-      midiEventPacket_t stripPitchBendChange = {0x0B, 0xE0, 1, stripVal};
-      MidiUSB.sendMIDI(stripPitchBendChange);
-      break;
-    case 3:
-      handleSensorOctaveShift(stripVal);
-      break;
-    case 4:
-      midiEventPacket_t ccMessage = {0x0B, 0xB0, stripMIDICC, stripVal};
-      MidiUSB.sendMIDI(ccMessage);
-      break;
-    default:
-      break;
+  // YES I KNOW but the switch here isn't working properly
+  // for reasons I don't understand. So this will have to do.
+  if (stripSensorMode == 0) {
+    velocity = stripVal;
+  } else if (stripSensorMode == 1) {
+    midiEventPacket_t ccChange = {0x0B, 0xB0, 1, stripVal};
+    MidiUSB.sendMIDI(ccChange);
+  } else if (stripSensorMode == 2) {
+    midiEventPacket_t stripPitchBendChange = {0x0B, 0xE0, 1, stripVal};
+    MidiUSB.sendMIDI(stripPitchBendChange);
+  } else if (stripSensorMode == 3) {
+    return;
+  } else if (stripSensorMode == 4) {
+    midiEventPacket_t ccMessage = {0x0B, 0xB0, stripMIDICC, stripVal};
+    MidiUSB.sendMIDI(ccMessage);
   }
 
   MidiUSB.flush();
 
 }
 
+byte lastOctave = currentStartingOctave;
+
 void handleSensorOctaveShift(byte sensorVal) {
-  sensorOctaveShift = map(sensorVal, minimumSensitivity, sensorSensitivities[currentSensitivity], 0, 3);
+  byte sensorOctaveShift = map(sensorVal, 0, 127, 0, 3);
+  byte newOctave = currentStartingOctave + sensorOctaveShift;
 
-  for (byte i = 0; i < rowsLength; i++) {
-    for (byte j = 0; j < columnsLength; j++) {
-      if (noteButtons[i][j]->lastPlayedNote) {
-        midiEventPacket_t noteOff = {0x08, 0x80, noteButtons[i][j]->lastPlayedNote, 127};
-        MidiUSB.sendMIDI(noteOff);
-        MidiUSB.flush();
-
-        byte noteToSend = noteButtons[i][j]->note + 12 * sensorOctaveShift;
-        midiEventPacket_t noteOn = {0x09, 0x90, noteToSend, 127};
-        MidiUSB.sendMIDI(noteOn);
-        MidiUSB.flush();
-      }
-    }
-
+  if (lastOctave != newOctave) {
+    assignNotesToButtons(currentStartingNote, newOctave, scales[currentScale], scaleLengths[currentScale]);
+    lastOctave = newOctave;
   }
+
 }
 
 byte offset = 2;
@@ -274,25 +246,22 @@ void drawTextWithShadow(char* text, byte x, byte y) {
   tft.print(text);
 }
 
-byte underscorePositionOffset;
-byte textX;
-byte indexOffset;
-byte menuNameX;
 
 void updateNumberSelectMenuScreen(char* menuName, byte menuNameLength, char value[4], byte selectedIndex, bool isMaximumThreeDigits) {
   tft.fillScreen(backgroundColor);
   tft.setTextSize(2);
 
-  menuNameX = (tft.width() / 2) - (22 * menuNameLength / 2);
+  byte menuNameX = (tft.width() / 2) - (22 * menuNameLength / 2);
   drawTextWithShadow(menuName, menuNameX, 50);
 
   tft.setTextSize(4);
 
-  indexOffset = 1;
+  byte indexOffset = 1;
   if (isMaximumThreeDigits) {
     indexOffset = 2;
   }
 
+  byte textX;
   if (isMaximumThreeDigits) {
     textX = (tft.width() / 2) - (44 * 3 / 2);
     drawTextWithShadow(value, textX, 120);
@@ -302,7 +271,6 @@ void updateNumberSelectMenuScreen(char* menuName, byte menuNameLength, char valu
     drawTextWithShadow(shortenedValue, textX, 120);
   }
 
-
-  underscorePositionOffset = (44 * (indexOffset - selectedIndex));
+  byte underscorePositionOffset = (44 * (indexOffset - selectedIndex));
   drawTextWithShadow("_", textX + underscorePositionOffset, 120);
 }

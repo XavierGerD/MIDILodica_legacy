@@ -2,7 +2,7 @@
 
 #define menusLength 10
 #define settingsLength 10
-#define sensorLength 5
+#define sensorLength 6
 #define stripLength 5
 #define scaleLength 14
 #define startingNoteLength 12
@@ -49,7 +49,7 @@ Menu sensorModeMenuItems[sensorLength] = {
   Menu("Mod Wheel", 1, changeSetting, getSelectedSensorMode),
   Menu("Pitch Bend", 2, changeSetting, getSelectedSensorMode),
   Menu("Octave Shift", 3, changeSetting, getSelectedSensorMode),
-
+  Menu("Off", 4, changeSetting, getSelectedSensorMode),
   // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
   Menu("Custom CC", 1, navigateToNumberSelectSubmenu, getSelectedSensorMode),
 };
@@ -60,6 +60,11 @@ int getSelectedStripMode() {
 
 void changeStripSetting(byte setting) {
   stripSensorMode = setting;
+
+  // Restore velocity.
+  if (setting != 0) {
+    velocity = 127;
+  }
   navigateToSubmenu(0);
 }
 
@@ -67,10 +72,9 @@ Menu stripModeMenuItems[stripLength] = {
   Menu("Velocity", 0, changeStripSetting, getSelectedStripMode),
   Menu("Mod Wheel", 1, changeStripSetting, getSelectedStripMode),
   Menu("Pitch Bend", 2, changeStripSetting, getSelectedStripMode),
-  Menu("Octave Shift", 3, changeStripSetting, getSelectedStripMode),
-
+  Menu("Off", 3, changeStripSetting, getSelectedStripMode),
   // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
-  Menu("Custom CC", 2, navigateToNumberSelectSubmenu, getSelectedSensorMode),
+  Menu("Custom CC", 2, navigateToNumberSelectSubmenu, getSelectedStripMode),
 };
 
 int getSelectedScale() {
@@ -308,7 +312,7 @@ int getSensorMIDICC() {
 }
 
 void onUpdateStripMIDICC(int newMIDICC) {
-  stripSensorMode = 4;
+  stripSensorMode = 5;
   stripMIDICC = newMIDICC;
 }
 
