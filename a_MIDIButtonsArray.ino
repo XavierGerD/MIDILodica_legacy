@@ -1,7 +1,8 @@
 const byte debounceDelay = 10;
 unsigned long lastDebounce = 0;
 
-bool pressedButtonState = 1;
+bool pressedNavButtonStates[] = { HIGH, HIGH, HIGH, HIGH, HIGH };
+bool pressedButtonState = HIGH;
 
 void playMIDINotes() {
   SPI.end();
@@ -33,8 +34,8 @@ void playMIDINotes() {
 
     if ((millis() - lastDebounce) > debounceDelay) {
       pressedButtonState = digitalRead(C8);
-      if (!pressedButtonState) {
-        handleButton(i, pressedButtonState);
+      if (pressedButtonState != pressedNavButtonStates[i]) {
+        handleNavButtons(i, pressedButtonState);
         lastDebounce = millis();
       }
 

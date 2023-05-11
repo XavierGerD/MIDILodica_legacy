@@ -1,49 +1,35 @@
 
-boolean lastUpButtonState = LOW;
-boolean lastDownButtonState = LOW;
-boolean lastSelectButtonState = LOW;
-boolean lastCancelButtonState = LOW;
-boolean lastUnderButtonState = LOW;
-boolean newUnderButtonState = HIGH;
-
-void handleButton(byte index, bool pressedButtonState) {
-
+void handleNavButtons(byte index, bool pressedButtonState) {
   switch (index) {
-    //    case 0:
-    //      // Not navigation technically, but it's simpler to include it
-    //      // in this loop. We want to call this function both on button
-    //      // press and release, as opposed to other buttons which
-    //      // are only actiaved on press.
-    //      if (pressedButtonState != lastUnderButtonState) {
-    //        handleUnderButtonModes();
-    //      }
-    //      lastUnderButtonState = pressedButtonState;
-    //      break;
+    case 0:
+      // Not navigation technically, but it's simpler to include it
+      // in this loop. We want to call this function both on button
+      // press and release, as opposed to other buttons which
+      // are only actiaved on press.
+      handleUnderButtonModes(pressedButtonState);
+      break;
     case 1:
-      if (!pressedButtonState && !lastSelectButtonState) {
+      if (!pressedButtonState && pressedNavButtonStates[1]) {
         handleNavigationSelect();
       }
-      lastSelectButtonState = pressedButtonState;
       break;
     case 2:
-      if (!pressedButtonState && !lastCancelButtonState) {
+      if (!pressedButtonState && pressedNavButtonStates[2]) {
         handleNavigationCancel();
       }
-      lastCancelButtonState = pressedButtonState;
       break;
     case 3:
-      if (!pressedButtonState && !lastUpButtonState) {
+      if (!pressedButtonState && pressedNavButtonStates[3]) {
         handleNavigatorUp();
       }
-      lastUpButtonState = pressedButtonState;
       break;
     case 4:
-      if (!pressedButtonState && !lastDownButtonState) {
+      if (!pressedButtonState && pressedNavButtonStates[4]) {
         handleNavigatorDown();
       }
-      lastDownButtonState = pressedButtonState;
       break;
   }
+   pressedNavButtonStates[index] = pressedButtonState;
 }
 
 void handleNavigationSelect() {
@@ -61,11 +47,11 @@ void handleNavigationCancel() {
     allNumberSelectMenus[currentNumberSelectMenu].onCancel();
     return;
   }
-  
+
   if (currentMenu == 0) {
     return;
   }
-  
+
   endMenuInteraction();
   drawMenu();
 }
