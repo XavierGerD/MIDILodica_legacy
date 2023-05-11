@@ -36,14 +36,14 @@ void drawMenu() {
   }
 
   if (previousMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 25, 15, selectedColor);
+    tft.fillCircle(tft.width() - 30, 25, 10, selectedColor);
   }
 
   if (currentMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 85, 15, selectedColor);
+    tft.fillCircle(tft.width() - 30, 85, 10, 0x1ad2);
   }
 
   if (nextMenuItem == selectedMenu) {
-    tft.fillCircle(tft.width() - 30, 145, 15, selectedColor);
+    tft.fillCircle(tft.width() - 30, 145, 10, selectedColor);
   }
 }

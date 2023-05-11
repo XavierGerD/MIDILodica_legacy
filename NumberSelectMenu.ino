@@ -40,6 +40,7 @@ class NumberSelectMenu {
       int initialValue = getInitialValue();
       char initVal[3];
       String valueAsString = itoa(initialValue, initVal, 10);
+      Serial.println(valueAsString);
       // Easier to always work with a string of length 3
       if (valueAsString.length() < 2) {
         valueAsString = "0" + valueAsString;
@@ -48,10 +49,10 @@ class NumberSelectMenu {
       if (valueAsString.length() < 3) {
         valueAsString = "0" + valueAsString;
       }
-
-      values[2] = valueAsString.charAt(2);
+      Serial.println(valueAsString);
+      values[2] = valueAsString.charAt(0);
       values[1] = valueAsString.charAt(1);
-      values[0] = valueAsString.charAt(0);
+      values[0] = valueAsString.charAt(2);
 
       selectedDigit = 1;
 
@@ -96,7 +97,14 @@ class NumberSelectMenu {
     void onConfirm() {
       selectedDigit--;
       if (selectedDigit < 0) {
-        String newValueString = String(values[0] - 48) + String(values[1] - 48) + String(values[2] - 48);
+        String newValueString = String(values[1] - 48) + String(values[0] - 48);
+        if (isMaximumThreeDigits) {
+          newValueString = String(values[2] - 48) + newValueString;
+        }
+        Serial.println(values[0]);
+        Serial.println(values[1]);
+        Serial.println(values[2]);
+        Serial.println(newValueString);
         onMenuConfirm(newValueString.toInt());
         endNumberSelectMenuInteraction();
         return;

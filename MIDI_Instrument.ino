@@ -291,8 +291,8 @@ void updateNumberSelectMenuScreen(char* menuName, byte menuNameLength, char valu
     drawTextWithShadow(value, textX, 120);
   } else {
     textX = (tft.width() / 2) - (44 * 2 / 2);
-    ////    char shortenedValue[] = {value[2], value[1]};
-    drawTextWithShadow(value, textX, 120);
+    char shortenedValue[] = {value[1], value[2]};
+    drawTextWithShadow(shortenedValue, textX, 120);
   }
 
 

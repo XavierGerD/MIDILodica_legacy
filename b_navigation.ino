@@ -33,12 +33,12 @@ void handleNavButtons(byte index, bool pressedButtonState) {
 }
 
 void handleNavigationSelect() {
-  if (currentNumberSelectMenu > 0) {
+  if (currentNumberSelectMenu >= 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onConfirm();
     return;
   }
 
-  allMenus[currentMenu][currentMenuItem].onAction(allMenus[currentMenu][currentMenuItem].submenuTarget);
+  allMenus[currentMenu][currentMenuItem].onAction(allMenus[currentMenu][currentMenuItem].submenuTarget);  
   drawMenu();
 }
 
@@ -57,7 +57,7 @@ void handleNavigationCancel() {
 }
 
 void handleNavigatorDown() {
-  if (currentNumberSelectMenu > 0) {
+  if (currentNumberSelectMenu >= 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onPressDown();
     return;
   }
@@ -70,7 +70,7 @@ void handleNavigatorDown() {
 }
 
 void handleNavigatorUp() {
-  if (currentNumberSelectMenu > 0) {
+  if (currentNumberSelectMenu >= 0) {
     allNumberSelectMenus[currentNumberSelectMenu].onPressUp();
     return;
   }

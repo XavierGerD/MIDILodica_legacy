@@ -8,6 +8,7 @@ void assignNotesToButtons(byte startingNote, byte startingOctave, byte scale[], 
   for (byte i = 0; i < rowsLength; i++) {
     for (byte j = 0; j < columnsLength; j++) {
       noteButtons[i][j]->changeButtonNote(currentNote);
+      noteButtons[i][j]->updateChannel(currentChannel);
       currentNote += scale[scaleCounter];
       scaleCounter++;
       if (scaleCounter == lengthOfScale) {
