@@ -166,7 +166,7 @@ void loop() {
     constrainedSensorVal = 100;
   }
 
- byte  sensorValue = map(constrainedSensorVal, minimumSensitivity, sensorSensitivities[currentSensitivity], 0, 127);
+  byte  sensorValue = map(constrainedSensorVal, minimumSensitivity, sensorSensitivities[currentSensitivity], 0, 127);
 
   if (sensorValue != nextVal) {
     handleSensorModes(sensorValue);
@@ -186,17 +186,17 @@ void handleSensorModes(byte sensorVal) {
   if (sensorMode == SENSOR_VELOCITY) {
     velocity = sensorVal;
   } else if (sensorMode == SENSOR_MOD_WHEEL) {
-    midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
+    midiEventPacket_t ccModWheel = {0x0B, 0xB0 | currentChannel, 1, sensorVal};
     MidiUSB.sendMIDI(ccModWheel);
   } else if (sensorMode == SENSOR_PITCH_BEND) {
-    midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0, 1, sensorVal};
+    midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0 | currentChannel, 1, sensorVal};
     MidiUSB.sendMIDI(sensorPitchBendChange);
   } else if (sensorMode == SENSOR_OCTAVE_SHIFT) {
     handleSensorOctaveShift(sensorVal);
   } else if (sensorMode == SENSOR_OFF) {
     return;
   } else if (sensorMode == SENSOR_CUSTOM_CC) {
-    midiEventPacket_t ccMessage = {0x0B, 0xB0, sensorMIDICC, sensorVal};
+    midiEventPacket_t ccMessage = {0x0B, 0xB0 | currentChannel, sensorMIDICC, sensorVal};
     MidiUSB.sendMIDI(ccMessage);
   }
 
@@ -209,15 +209,15 @@ void handleStripVal(byte stripVal) {
   if (stripSensorMode == STRIP_VELOCITY) {
     velocity = stripVal;
   } else if (stripSensorMode == STRIP_MOD_WHEEL) {
-    midiEventPacket_t ccChange = {0x0B, 0xB0, 1, stripVal};
+    midiEventPacket_t ccChange = {0x0B, 0xB0 | currentChannel, 1, stripVal};
     MidiUSB.sendMIDI(ccChange);
   } else if (stripSensorMode == STRIP_PITCH_BEND) {
-    midiEventPacket_t stripPitchBendChange = {0x0B, 0xE0, 1, stripVal};
+    midiEventPacket_t stripPitchBendChange = {0x0B, 0xE0 | currentChannel, 1, stripVal};
     MidiUSB.sendMIDI(stripPitchBendChange);
   } else if (stripSensorMode == STRIP_OFF) {
     return;
   } else if (stripSensorMode == STRIP_CUSTOM_CC) {
-    midiEventPacket_t ccMessage = {0x0B, 0xB0, stripMIDICC, stripVal};
+    midiEventPacket_t ccMessage = {0x0B, 0xB0 | currentChannel, stripMIDICC, stripVal};
     MidiUSB.sendMIDI(ccMessage);
   }
 

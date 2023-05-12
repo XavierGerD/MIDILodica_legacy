@@ -1,6 +1,6 @@
 void handleSustain() {
   byte sustainValue =  pressedNavButtonStates[0] ? 64 : 0;
-  midiEventPacket_t sutainPacket = {0x0B, 0xB0, 64, sustainValue};
+  midiEventPacket_t sutainPacket = {0x0B, 0xB0 | currentChannel, 64, sustainValue};
   MidiUSB.sendMIDI(sutainPacket);
   MidiUSB.flush();
 }
