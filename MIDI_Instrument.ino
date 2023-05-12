@@ -64,26 +64,29 @@ NoteButton *noteButtons[rowsLength][columnsLength];
 // MIDIFlute config
 
 // Sensor modes:
-// 0 = Velocity
-// 1 = Mod Wheel
-// 2 = Pitch Bend
-// 3 = Octave Shift
-// 4 = Off
-// 5 = Custom CC
-byte sensorMode = 1;
+const byte SENSOR_VELOCITY = 0;
+const byte SENSOR_MOD_WHEEL = 1;
+const byte SENSOR_PITCH_BEND = 2;
+const byte SENSOR_OCTAVE_SHIFT = 3;
+const byte SENSOR_OFF = 4;
+const byte SENSOR_CUSTOM_CC = 5;
 
-// Under Button Modes:
-// 0 = Octave Up
-// 1 = Octave Down
-// 2 = Sustain
+byte sensorMode = SENSOR_MOD_WHEEL;
+
+// Under button modes:
+const byte UNDER_BUTTON_8VA_UP = 0;
+const byte UNDER_BUTTON_8VA_DOWN = 1;
+const byte UNDER_BUTTON_SUSTAIN = 2;
+
 byte underButtonMode = 0;
 
 // Strip pot modes:
-// 0 = Velocity
-// 1 = Mod Wheel
-// 2 = Pitch Bend
-// 3 = Off
-// 4 = Custom CC
+const byte STRIP_VELOCITY = 0;
+const byte STRIP_MOD_WHEEL = 1;
+const byte STRIP_PITCH_BEND = 2;
+const byte STRIP_OFF = 3;
+const byte STRIP_CUSTOM_CC = 4;
+
 byte stripSensorMode = 2;
 
 byte currentScale = 0;
@@ -180,19 +183,19 @@ void loop() {
 void handleSensorModes(byte sensorVal) {
   // YES I KNOW but the switch here isn't working properly
   // for reasons I don't understand. So this will have to do.
-  if (sensorMode == 0) {
+  if (sensorMode == SENSOR_VELOCITY) {
     velocity = sensorVal;
-  } else if (sensorMode == 1) {
+  } else if (sensorMode == SENSOR_MOD_WHEEL) {
     midiEventPacket_t ccModWheel = {0x0B, 0xB0, 1, sensorVal};
     MidiUSB.sendMIDI(ccModWheel);
-  } else if (sensorMode == 2) {
+  } else if (sensorMode == SENSOR_PITCH_BEND) {
     midiEventPacket_t sensorPitchBendChange = {0x0B, 0xE0, 1, sensorVal};
     MidiUSB.sendMIDI(sensorPitchBendChange);
-  } else if (sensorMode == 3) {
+  } else if (sensorMode == SENSOR_OCTAVE_SHIFT) {
     handleSensorOctaveShift(sensorVal);
-  } else if (sensorMode == 4) {
+  } else if (sensorMode == SENSOR_OFF) {
     return;
-  } else if (sensorMode == 5) {
+  } else if (sensorMode == SENSOR_CUSTOM_CC) {
     midiEventPacket_t ccMessage = {0x0B, 0xB0, sensorMIDICC, sensorVal};
     MidiUSB.sendMIDI(ccMessage);
   }
@@ -203,17 +206,17 @@ void handleSensorModes(byte sensorVal) {
 void handleStripVal(byte stripVal) {
   // YES I KNOW but the switch here isn't working properly
   // for reasons I don't understand. So this will have to do.
-  if (stripSensorMode == 0) {
+  if (stripSensorMode == STRIP_VELOCITY) {
     velocity = stripVal;
-  } else if (stripSensorMode == 1) {
+  } else if (stripSensorMode == STRIP_MOD_WHEEL) {
     midiEventPacket_t ccChange = {0x0B, 0xB0, 1, stripVal};
     MidiUSB.sendMIDI(ccChange);
-  } else if (stripSensorMode == 2) {
+  } else if (stripSensorMode == STRIP_PITCH_BEND) {
     midiEventPacket_t stripPitchBendChange = {0x0B, 0xE0, 1, stripVal};
     MidiUSB.sendMIDI(stripPitchBendChange);
-  } else if (stripSensorMode == 3) {
+  } else if (stripSensorMode == STRIP_OFF) {
     return;
-  } else if (stripSensorMode == 4) {
+  } else if (stripSensorMode == STRIP_CUSTOM_CC) {
     midiEventPacket_t ccMessage = {0x0B, 0xB0, stripMIDICC, stripVal};
     MidiUSB.sendMIDI(ccMessage);
   }

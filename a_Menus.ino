@@ -45,11 +45,11 @@ void changeSetting(byte setting) {
 }
 
 Menu sensorModeMenuItems[sensorLength] = {
-  Menu("Velocity", 0, changeSetting, getSelectedSensorMode),
-  Menu("Mod Wheel", 1, changeSetting, getSelectedSensorMode),
-  Menu("Pitch Bend", 2, changeSetting, getSelectedSensorMode),
-  Menu("Octave Shift", 3, changeSetting, getSelectedSensorMode),
-  Menu("Off", 4, changeSetting, getSelectedSensorMode),
+  Menu("Velocity", SENSOR_VELOCITY, changeSetting, getSelectedSensorMode),
+  Menu("Mod Wheel", SENSOR_MOD_WHEEL, changeSetting, getSelectedSensorMode),
+  Menu("Pitch Bend", SENSOR_PITCH_BEND, changeSetting, getSelectedSensorMode),
+  Menu("Octave Shift", SENSOR_OCTAVE_SHIFT, changeSetting, getSelectedSensorMode),
+  Menu("Off", SENSOR_OFF, changeSetting, getSelectedSensorMode),
   // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
   Menu("Custom CC", 1, navigateToNumberSelectSubmenu, getSelectedSensorMode),
 };
@@ -69,10 +69,10 @@ void changeStripSetting(byte setting) {
 }
 
 Menu stripModeMenuItems[stripLength] = {
-  Menu("Velocity", 0, changeStripSetting, getSelectedStripMode),
-  Menu("Mod Wheel", 1, changeStripSetting, getSelectedStripMode),
-  Menu("Pitch Bend", 2, changeStripSetting, getSelectedStripMode),
-  Menu("Off", 3, changeStripSetting, getSelectedStripMode),
+  Menu("Velocity", STRIP_VELOCITY, changeStripSetting, getSelectedStripMode),
+  Menu("Mod Wheel", STRIP_MOD_WHEEL, changeStripSetting, getSelectedStripMode),
+  Menu("Pitch Bend", STRIP_PITCH_BEND, changeStripSetting, getSelectedStripMode),
+  Menu("Off", STRIP_OFF, changeStripSetting, getSelectedStripMode),
   // submenu is 1 here because it belongs to the allNumberSelectMenus list and not the regular allMenus list.
   Menu("Custom CC", 2, navigateToNumberSelectSubmenu, getSelectedStripMode),
 };
@@ -174,9 +174,9 @@ void changeUnderButtonMode(byte newValue) {
 }
 
 Menu underButtonMenuItems[underButtonLength] = {
-  Menu("Octave Up", 0, changeUnderButtonMode, getUnderButtonMode),
-  Menu("Octave Down", 1, changeUnderButtonMode, getUnderButtonMode),
-  Menu("Sustain", 2, changeUnderButtonMode, getUnderButtonMode),
+  Menu("Octave Up", UNDER_BUTTON_8VA_UP, changeUnderButtonMode, getUnderButtonMode),
+  Menu("Octave Down", UNDER_BUTTON_8VA_DOWN, changeUnderButtonMode, getUnderButtonMode),
+  Menu("Sustain", UNDER_BUTTON_SUSTAIN, changeUnderButtonMode, getUnderButtonMode),
 };
 
 int getPatch() {
@@ -299,11 +299,13 @@ void onUpdateMIDIChannel(int newMIDIChannel) {
 }
 
 int getMidiChannel() {
+  // +1 because the actual MIDI channel is 0 but
+  // is shown as 1 to the user.
   return currentChannel + 1;
 }
 
 void onUpdateSensorMIDICC(int newMIDICC) {
-  sensorMode = 4;
+  sensorMode = SENSOR_CUSTOM_CC;
   sensorMIDICC = newMIDICC;
 }
 
@@ -312,7 +314,7 @@ int getSensorMIDICC() {
 }
 
 void onUpdateStripMIDICC(int newMIDICC) {
-  stripSensorMode = 5;
+  stripSensorMode = STRIP_CUSTOM_CC;
   stripMIDICC = newMIDICC;
 }
 

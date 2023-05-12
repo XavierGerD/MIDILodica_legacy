@@ -8,15 +8,15 @@ void handleSustain() {
 void handleUnderButtonModes(bool pressedButtonState) {
   byte newOctave;
   switch (underButtonMode) {
-    case 0:
+    case UNDER_BUTTON_8VA_UP:
       newOctave = !pressedButtonState ? currentStartingOctave + 1 : currentStartingOctave;
       assignNotesToButtons(currentStartingNote, newOctave, scales[currentScale], scaleLengths[currentScale]);
       break;
-    case 1:
+    case UNDER_BUTTON_8VA_DOWN:
       newOctave = !pressedButtonState ? currentStartingOctave - 1 : currentStartingOctave;
       assignNotesToButtons(currentStartingNote, newOctave, scales[currentScale], scaleLengths[currentScale]);
       break;
-    case 2:
+    case UNDER_BUTTON_SUSTAIN:
       handleSustain();
       break;
   }
